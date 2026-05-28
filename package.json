@@ -1,16 +1,31 @@
 {
-  "name": "jaimbo-website-permanent",
+  "name": "jaimbo-website",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Official website for Jaimbo - Verified Digital Creator & Political Analyst",
+  "type": "module",
+  "main": "api/server.js",
   "scripts": {
-    "start": "vite"
+    "dev": "node api/server.js",
+    "build": "node scripts/build.js",
+    "start": "node api/server.js",
+    "deploy": "npm run build && echo 'Ready for deployment'"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "keywords": [
+    "jaimbo",
+    "digital-creator",
+    "political-analyst",
+    "kenya",
+    "social-commentary"
+  ],
+  "author": "Jaimbo",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "nodemailer": "^6.9.1"
+  },
   "devDependencies": {
-    "vite": "^8.0.14"
+    "nodemon": "^2.0.20"
   }
 }
