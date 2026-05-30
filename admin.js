@@ -2,6 +2,7 @@ import {
   AuthError,
   getUser,
   handleAuthCallback,
+  hydrateSession,
   login,
   logout,
   signup,
@@ -26,8 +27,13 @@ let currentImageUrl = "";
 
 const setStatus = (target, message, isError = false) => {
   target.textContent = message;
-  target.style.color = isError ? "#a43535" : "#1b6f88";
+  target.style.color = isError ? "#ff6b7d" : "#4a9af5";
 };
+
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : "";
+}
 
 async function readFileAsDataUrl(file) {
   if (!file) return "";
@@ -40,9 +46,14 @@ async function readFileAsDataUrl(file) {
 }
 
 async function api(path, options = {}) {
+  const token = getCookie("nf_jwt");
   const response = await fetch(path, {
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
     ...options,
   });
   const data = await response.json().catch(() => ({}));
@@ -116,6 +127,7 @@ loginForm.addEventListener("submit", async (event) => {
   const form = new FormData(loginForm);
   try {
     await login(form.get("email"), form.get("password"));
+    await hydrateSession();
     await loadAdmin();
   } catch (error) {
     setStatus(authStatus, error instanceof AuthError ? error.message : "Sign in failed.", true);
@@ -198,6 +210,7 @@ deleteArticleButton.addEventListener("click", async () => {
 newArticleButton.addEventListener("click", resetArticleForm);
 
 await handleAuthCallback().catch(() => null);
+await hydrateSession().catch(() => null);
 if (await getUser()) {
   await loadAdmin();
 }
