@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaimbo Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        /* Login Page */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+        }
+
+        .login-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-box h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #1877f2;
+        }
+
+        .login-box p {
+            color: #999;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #1877f2;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-btn:hover {
+            background: #0a66c2;
+        }
+
+        .login-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #8b0000;
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+        }
+
+        /* Dashboard */
+        .dashboard-container {
+            display: none;
+            min-height: 100vh;
+            background: #0a0a0a;
+        }
+
+        .dashboard-header {
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-header h1 {
+            color: #1877f2;
+            font-size: 24px;
+        }
+
+        .logout-btn {
+            background: #e41e3f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            background: #c41830;
+        }
+
+        .dashboard-content {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #1a1a1a;
+            border-right: 1px solid #333;
+            padding: 20px;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-menu button {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid #333;
+            color: #999;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-menu button:hover,
+        .sidebar-menu button.active {
+            background: #1877f2;
+            color: white;
+            border-color: #1877f2;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #1877f2;
+        }
+
+        /* Articles Section */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .article-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .article-card:hover {
+            border-color: #1877f2;
+        }
+
+        .article-card h3 {
+            color: #1877f2;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .article-card p {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .article-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            background: #1877f2;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #0a66c2;
+        }
+
+        .btn-delete {
+            background: #e41e3f;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c41830;
+        }
+
+        /* Form Styles */
+        .form-section {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            margin-bottom: 20px;
+            color: #1877f2;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1877f2;
+        }
+
+        .btn-primary {
+            background: #1877f2;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #0a66c2;
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #444;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1877f2;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* Submissions Table */
+        .submissions-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .submissions-table th {
+            background: #0a0a0a;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            color: #1877f2;
+            font-weight: 600;
+        }
+
+        .submissions-table td {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .submissions-table tr:hover {
+            background: #222;
+        }
+
+        .success-message {
+            background: #0a5f0a;
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #333;
+                min-height: auto;
+                display: flex;
+                overflow-x: auto;
+            }
+
+            .sidebar-menu {
+                display: flex;
+                gap: 10px;
+            }
+
+            .sidebar-menu li {
+                margin-bottom: 0;
+                flex-shrink: 0;
+            }
+
+            .articles-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <h1>Jaimbo Admin</h1>
+            <p>Manage your website content</p>
+            <div id="errorMessage" class="error-message"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="your-email@gmail.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="login-btn">Sign In</button>
+            </form>
+            <hr style="border: none; border-top: 1px solid #333; margin: 30px 0;">
+            <p style="color: #999; font-size: 12px; margin-bottom: 15px;">Demo Credentials:</p>
+            <p style="color: #666; font-size: 12px;">Email: hassaniejaimbo@gmail.com</p>
+            <p style="color: #666; font-size: 12px;">Password: admin123</p>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Jaimbo Admin Dashboard</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="dashboard-content">
+            <div class="sidebar">
+                <ul class="sidebar-menu">
+                    <li><button class="menu-btn active" data-section="overview">📊 Overview</button></li>
+                    <li><button class="menu-btn" data-section="articles">📝 Articles</button></li>
+                    <li><button class="menu-btn" data-section="content">✏️ Edit Content</button></li>
+                    <li><button class="menu-btn" data-section="submissions">💬 Submissions</button></li>
+                    <li><button class="menu-btn" data-section="settings">⚙️ Settings</button></li>
+                </ul>
+            </div>
+
+            <div class="main-content">
+                <!-- Overview Section -->
+                <section id="overview" class="section active">
+                    <h2>Dashboard Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalArticles">0</div>
+                            <div class="stat-label">Articles</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalSubmissions">0</div>
+                            <div class="stat-label">Form Submissions</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">84K</div>
+                            <div class="stat-label">Followers</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">3.2K</div>
+                            <div class="stat-label">Top Reactions</div>
+                        </div>
+                    </div>
+                    <p style="color: #999; margin-top: 20px;">Welcome to your admin dashboard! Use the menu to manage your website content.</p>
+                </section>
+
+                <!-- Articles Section -->
+                <section id="articles" class="section">
+                    <h2>Articles</h2>
+                    <button class="btn-primary" onclick="showNewArticleForm()" style="margin-bottom: 20px;">+ New Article</button>
+                    <div id="successMessage" class="success-message"></div>
+                    <div id="articlesContainer" class="articles-grid"></div>
+                </section>
+
+                <!-- Edit Content Section -->
+                <section id="content" class="section">
+                    <h2>Edit Website Content</h2>
+                    <div class="form-section">
+                        <h3>Bio</h3>
+                        <div class="form-group">
+                            <label>Current Bio</label>
+                            <textarea id="bioText" placeholder="Update your bio...">The only way to do great work is to love what you do.</textarea>
+                        </div>
+                        <button class="btn-primary" onclick="saveBio()">Save Bio</button>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Featured Story</h3>
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" id="featuredTitle" placeholder="Featured story title" value="Political Analysis & Civic Education">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea id="featuredDesc" placeholder="Featured story description">Bold commentary on Kenyan politics and current affairs</textarea>
+                        </div>
+                        <button class="btn-primary" onclick="saveFeatured()">Save Featured Story</button>
+                    </div>
+                </section>
+
+                <!-- Submissions Section -->
+                <section id="submissions" class="section">
+                    <h2>Contact Form Submissions</h2>
+                    <div id="submissionsContainer">
+                        <table class="submissions-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Subject</th>
+                                    <th>Message</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="submissionsBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #666;">Loading submissions...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="settings" class="section">
+                    <h2>Settings</h2>
+                    <div class="form-section">
+                        <h3>Website Settings</h3>
+                        <div class="form-group">
+                            <label>Website Title</label>
+                            <input type="text" id="siteTitle" placeholder="Jaimbo" value="Jaimbo">
+                        </div>
+                        <div class="form-group">
+                            <label>Website Description</label>
+                            <textarea id="siteDesc" placeholder="Website description">Verified Digital Creator - Political Analysis & Civic Education</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Admin Email</label>
+                            <input type="email" id="adminEmail" placeholder="admin@jaimbo.com" value="hassaniejaimbo@gmail.com">
+                        </div>
+                        <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Updated admin credentials
+        const ADMIN_EMAIL = 'hassaniejaimbo@gmail.com';
+        const ADMIN_PASSWORD = 'admin123';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLogin();
+            setupMenuButtons();
+            loadArticles();
+            loadSubmissions();
+        });
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+                localStorage.setItem('adminLoggedIn', 'true');
+                localStorage.setItem('adminEmail', email);
+                showDashboard();
+            } else {
+                showError('Invalid email or password. Use: ' + ADMIN_EMAIL);
+            }
+        });
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMessage');
+            successEl.textContent = message;
+            successEl.style.display = 'block';
+            setTimeout(() => {
+                successEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function checkLogin() {
+            if (localStorage.getItem('adminLoggedIn') === 'true') {
+                showDashboard();
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'flex';
+            document.getElementById('dashboard').style.flexDirection = 'column';
+        }
+
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminEmail');
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('loginForm').reset();
+        }
+
+        function setupMenuButtons() {
+            document.querySelectorAll('.menu-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
+                    switchSection(section, this);
+                });
+            });
+        }
+
+        function switchSection(sectionId, button) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(sectionId).classList.add('active');
+            button.classList.add('active');
+            
+            if (sectionId === 'submissions') {
+                loadSubmissions();
+            }
+        }
+
+        // Articles Management
+        let articles = JSON.parse(localStorage.getItem('jaimboArticles')) || [];
+
+        function loadArticles() {
+            const container = document.getElementById('articlesContainer');
+            document.getElementById('totalArticles').textContent = articles.length;
+            
+            if (articles.length === 0) {
+                container.innerHTML = '<p style="color: #999; grid-column: 1/-1;">No articles yet. Create your first article!</p>';
+                return;
+            }
+
+            container.innerHTML = articles.map((article, index) => `
+                <div class="article-card">
+                    <h3>${article.title}</h3>
+                    <p>${article.content.substring(0, 100)}...</p>
+                    <small style="color: #666;">${article.date}</small>
+                    <div class="article-actions" style="margin-top: 15px;">
+                        <button class="btn-small btn-edit" onclick="editArticle(${index})">Edit</button>
+                        <button class="btn-small btn-delete" onclick="deleteArticle(${index})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showNewArticleForm() {
+            const title = prompt('Article Title:');
+            if (!title) return;
+            const content = prompt('Article Content:');
+            if (!content) return;
+
+            const article = {
+                title: title,
+                content: content,
+                date: new Date().toLocaleDateString()
+            };
+
+            articles.push(article);
+            localStorage.setItem('jaimboArticles', JSON.stringify(articles));
+            loadArticles();
+            showSuccess('✅ Article created successfully!');
+        }
+
+        function editArticle(index) {
+            const article = articles[index];
+            const title = prompt('Edit Title:', article.title);
+            if (title === null) return;
+            const content = prompt('Edit Content:', article.content);
+            if (content === null) return;
+
+            articles[index] = { 
+                title: title, 
+                content: content, 
+                date: article.date 
+            };
+            localStorage.setItem('jaimboArticles', JSON.stringify(articles));
+            loadArticles();
+            showSuccess('✅ Article updated successfully!');
+        }
+
+        function deleteArticle(index) {
+            if (confirm('Are you sure you want to delete this article?')) {
+                articles.splice(index, 1);
+                localStorage.setItem('jaimboArticles', JSON.stringify(articles));
+                loadArticles();
+                showSuccess('✅ Article deleted successfully!');
+            }
+        }
+
+        // Content Management
+        function saveBio() {
+            const bio = document.getElementById('bioText').value;
+            localStorage.setItem('jaimbo_bio', bio);
+            showSuccess('✅ Bio updated successfully!');
+        }
+
+        function saveFeatured() {
+            const featured = {
+                title: document.getElementById('featuredTitle').value,
+                description: document.getElementById('featuredDesc').value
+            };
+            localStorage.setItem('jaimbo_featured', JSON.stringify(featured));
+            showSuccess('✅ Featured story updated successfully!');
+        }
+
+        function saveSettings() {
+            const settings = {
+                title: document.getElementById('siteTitle').value,
+                description: document.getElementById('siteDesc').value,
+                adminEmail: document.getElementById('adminEmail').value
+            };
+            localStorage.setItem('jaimbo_settings', JSON.stringify(settings));
+            showSuccess('✅ Settings saved successfully!');
+        }
+
+        // Load Submissions
+        function loadSubmissions() {
+            fetch('/api/submissions')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById('submissionsBody');
+                    if (data.submissions && data.submissions.length > 0) {
+                        tbody.innerHTML = data.submissions.map(sub => `
+                            <tr>
+                                <td>${sub.firstName} ${sub.lastName}</td>
+                                <td>${sub.email}</td>
+                                <td>${sub.subject}</td>
+                                <td>${sub.message.substring(0, 50)}...</td>
+                                <td>${new Date(sub.timestamp).toLocaleDateString()}</td>
+                            </tr>
+                        `).join('');
+                        document.getElementById('totalSubmissions').textContent = data.submissions.length;
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">No submissions yet</td></tr>';
+                        document.getElementById('totalSubmissions').textContent = '0';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading submissions:', err);
+                    document.getElementById('submissionsBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #e41e3f;">Error loading submissions</td></tr>';
+                });
+        }
+    </script>
+</body>
+</html>
