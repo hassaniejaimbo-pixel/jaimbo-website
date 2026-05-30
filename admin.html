@@ -422,6 +422,7 @@
         <div class="container">
             <div class="sidebar">
                 <button class="menu-item active" onclick="switchSection('overview', this)">📊 Overview</button>
+                <button class="menu-item" onclick="switchSection('live', this)">🔴 Live Video</button>
                 <button class="menu-item" onclick="switchSection('articles', this)">📝 Articles</button>
                 <button class="menu-item" onclick="switchSection('posts', this)">📢 Posts</button>
                 <button class="menu-item" onclick="switchSection('content', this)">✏️ Content</button>
@@ -457,6 +458,31 @@
                     <div class="card">
                         <h3>Welcome to Jaimbo Admin</h3>
                         <p>Manage your website content, articles, posts, and more from this dashboard.</p>
+                    </div>
+                </section>
+
+                <!-- Live Video Section -->
+                <section id="live" class="section">
+                    <h2>Live Video</h2>
+                    <div id="liveSuccessMessage" class="success-message"></div>
+                    <div id="liveErrorMessage" class="error-message" style="position: static; max-width: 600px;"></div>
+                    <div class="form-section">
+                        <h3>Set the live stream link</h3>
+                        <p style="color:#999; font-size:14px; margin-bottom:20px;">
+                            Paste the link to your live video (Facebook Live, YouTube, Vimeo, or any stream URL).
+                            It appears instantly in the <strong>Live</strong> tab on your website. Leave it empty and save to go offline.
+                        </p>
+                        <div class="form-group">
+                            <label>Live Video URL</label>
+                            <input type="url" id="liveUrl" placeholder="https://www.facebook.com/.../videos/...">
+                        </div>
+                        <div class="form-group">
+                            <label>Title (optional)</label>
+                            <input type="text" id="liveTitle" placeholder="e.g. Live: Breaking down the budget">
+                        </div>
+                        <button class="btn-primary" onclick="saveLiveVideo()">Save & Go Live</button>
+                        <button class="btn-secondary" onclick="clearLiveVideo()">Clear / Go Offline</button>
+                        <p id="liveCurrentStatus" style="color:#999; font-size:13px; margin-top:20px;">Loading current status…</p>
                     </div>
                 </section>
 
@@ -637,6 +663,13 @@
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
             btn.classList.add('active');
+
+            if (sectionId === 'submissions') {
+                loadSubmissions();
+            }
+            if (sectionId === 'live') {
+                loadLiveVideo();
+            }
         }
 
         function showSuccess(msg) {
@@ -752,6 +785,76 @@
             showSuccess('About section saved!');
         }
 
+        // Live Video Management
+        function loadLiveVideo() {
+            const statusEl = document.getElementById('liveCurrentStatus');
+            fetch('/api/live-video')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('liveUrl').value = data.url || '';
+                    document.getElementById('liveTitle').value = data.title || '';
+                    if (data.url) {
+                        const when = data.updatedAt ? ' (updated ' + new Date(data.updatedAt).toLocaleString() + ')' : '';
+                        statusEl.innerHTML = '🔴 Currently <strong style="color:#e41e3f;">LIVE</strong>' + when;
+                    } else {
+                        statusEl.innerHTML = '⚫ Currently <strong>offline</strong> — no live video is showing on the site.';
+                    }
+                })
+                .catch(() => { statusEl.textContent = 'Could not load current status.'; });
+        }
+
+        function showLiveError(message) {
+            const el = document.getElementById('liveErrorMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+
+        function showLiveSuccess(message) {
+            const el = document.getElementById('liveSuccessMessage');
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+
+        function saveLiveVideo() {
+            const url = document.getElementById('liveUrl').value.trim();
+            const title = document.getElementById('liveTitle').value.trim();
+            fetch('/api/live-video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, title, passcode: ADMIN_PASSWORD })
+            })
+                .then(async r => {
+                    const data = await r.json();
+                    if (!r.ok) throw new Error(data.error || 'Failed to save.');
+                    return data;
+                })
+                .then(data => {
+                    showLiveSuccess(data.url ? '✅ You are now live on the site!' : '✅ Live video cleared — site is offline.');
+                    loadLiveVideo();
+                })
+                .catch(err => showLiveError('❌ ' + err.message));
+        }
+
+        function clearLiveVideo() {
+            if (!confirm('Remove the live video and show the offline state on your website?')) return;
+            fetch('/api/live-video', {
+                method: 'DELETE',
+                headers: { 'x-admin-passcode': ADMIN_PASSWORD }
+            })
+                .then(async r => {
+                    const data = await r.json();
+                    if (!r.ok) throw new Error(data.error || 'Failed to clear.');
+                    return data;
+                })
+                .then(() => {
+                    showLiveSuccess('✅ Live video cleared — site is offline.');
+                    loadLiveVideo();
+                })
+                .catch(err => showLiveError('❌ ' + err.message));
+        }
+
         // Gallery
         function addImage() {
             const url = document.getElementById('imageUrl').value;
@@ -791,7 +894,9 @@
 
         // Submissions
         function loadSubmissions() {
-            fetch('/api/submissions')
+            fetch('/api/submissions', {
+                headers: { 'x-admin-passcode': ADMIN_PASSWORD }
+            })
                 .then(r => r.json())
                 .then(data => {
                     const subs = data.submissions || [];
