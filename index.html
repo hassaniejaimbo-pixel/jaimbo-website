@@ -970,6 +970,7 @@
       <li><a href="#content">Content</a></li>
       <li><a href="#social-proof">Community</a></li>
       <li><a href="#contact">Contact</a></li>
+      <li><a href="/admin.html">Admin</a></li>
       <li><a href="https://www.facebook.com/profile.php?id=61578836424894" target="_blank" class="nav-cta">Follow</a></li>
     </ul>
   </nav>
@@ -1061,7 +1062,7 @@
         <h2 class="section-title">What Jaimbo Creates</h2>
         <p class="section-subtitle">From political deep-dives to viral social commentary — content that sparks real conversations across Kenya and beyond.</p>
       </div>
-      <div class="cards-grid">
+      <div class="cards-grid" id="dynamicArticles">
         <div class="card fade-in">
           <div class="card-icon blue">🏛️</div>
           <h3 class="card-title">Political Analysis</h3>
@@ -1321,6 +1322,65 @@
         }
       });
     });
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[character]));
+    }
+
+    async function loadManagedContent() {
+      try {
+        const response = await fetch('/api/content', { credentials: 'include' });
+        if (!response.ok) return;
+        const data = await response.json();
+        const settings = data.settings || {};
+
+        const profileImage = document.querySelector('.hero-profile-img');
+        if (profileImage && settings.profileImageUrl) profileImage.src = settings.profileImageUrl;
+
+        const heroName = document.querySelector('.hero-name');
+        if (heroName && settings.name) heroName.textContent = settings.name;
+
+        const heroTitle = document.querySelector('.hero-title');
+        if (heroTitle && settings.title) heroTitle.textContent = settings.title;
+
+        const heroTagline = document.querySelector('.hero-tagline');
+        if (heroTagline && settings.tagline) heroTagline.textContent = settings.tagline;
+
+        const statNumbers = document.querySelectorAll('.stat-number');
+        if (statNumbers[0] && settings.followers) statNumbers[0].textContent = settings.followers;
+        if (statNumbers[1] && settings.posts) statNumbers[1].textContent = settings.posts;
+        if (statNumbers[2] && settings.reach) statNumbers[2].textContent = settings.reach;
+
+        document.querySelectorAll('a[href*="facebook.com"]').forEach(link => {
+          if (settings.facebookUrl) link.href = settings.facebookUrl;
+        });
+
+        const articleGrid = document.getElementById('dynamicArticles');
+        if (articleGrid && Array.isArray(data.articles) && data.articles.length) {
+          articleGrid.innerHTML = data.articles.map((article, index) => `
+            <article class="card fade-in">
+              ${article.imageUrl ? `<img src="${escapeHtml(article.imageUrl)}" alt="" style="width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:8px;margin-bottom:18px;">` : `<div class="card-icon ${['blue', 'red', 'gold', 'green'][index % 4]}">✦</div>`}
+              <h3 class="card-title">${escapeHtml(article.title)}</h3>
+              <p class="card-desc">${escapeHtml(article.excerpt || article.body)}</p>
+              <div class="card-meta">
+                <span>•</span>
+                <span>${escapeHtml(article.status || 'published')}</span>
+              </div>
+            </article>
+          `).join('');
+        }
+      } catch (error) {
+        console.warn('Managed content unavailable.');
+      }
+    }
+
+    loadManagedContent();
   </script>
 </body>
 </html>

@@ -1,0 +1,19 @@
+{
+  "name": "jaimbo-website",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.2.0",
+    "@netlify/database": "^1.0.0",
+    "@netlify/functions": "^2.8.2",
+    "@netlify/identity": "^1.2.0",
+    "nodemailer": "^6.10.1"
+  },
+  "devDependencies": {
+    "drizzle-kit": "1.0.0-beta.22",
+    "drizzle-orm": "1.0.0-beta.22"
+  }
+}
