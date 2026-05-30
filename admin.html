@@ -12,13 +12,12 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0a0a0a;
             color: #fff;
             line-height: 1.6;
         }
 
-        /* Login Page */
         .login-container {
             display: flex;
             align-items: center;
@@ -43,12 +42,6 @@
             color: #1877f2;
         }
 
-        .login-box p {
-            color: #999;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-
         .form-group {
             margin-bottom: 20px;
         }
@@ -57,7 +50,6 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            font-size: 14px;
         }
 
         .form-group input {
@@ -68,7 +60,6 @@
             border-radius: 8px;
             color: #fff;
             font-size: 14px;
-            transition: border-color 0.3s;
         }
 
         .form-group input:focus {
@@ -76,46 +67,41 @@
             border-color: #1877f2;
         }
 
-        .login-btn {
+        .btn-login {
             width: 100%;
             padding: 12px;
             background: #1877f2;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s;
         }
 
-        .login-btn:hover {
+        .btn-login:hover {
             background: #0a66c2;
         }
 
-        .login-btn:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-
-        .error-message {
+        .error-msg {
             background: #8b0000;
             color: #fff;
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 20px;
             display: none;
-            font-size: 14px;
         }
 
-        /* Dashboard */
-        .dashboard-container {
+        .dashboard {
             display: none;
-            min-height: 100vh;
-            background: #0a0a0a;
         }
 
-        .dashboard-header {
+        .dashboard.active {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .header {
             background: #1a1a1a;
             border-bottom: 1px solid #333;
             padding: 20px;
@@ -124,12 +110,12 @@
             align-items: center;
         }
 
-        .dashboard-header h1 {
+        .header h1 {
             color: #1877f2;
             font-size: 24px;
         }
 
-        .logout-btn {
+        .btn-logout {
             background: #e41e3f;
             color: white;
             border: none;
@@ -139,14 +125,9 @@
             font-weight: 600;
         }
 
-        .logout-btn:hover {
-            background: #c41830;
-        }
-
-        .dashboard-content {
+        .container {
             display: flex;
-            max-width: 1400px;
-            margin: 0 auto;
+            flex: 1;
         }
 
         .sidebar {
@@ -154,18 +135,11 @@
             background: #1a1a1a;
             border-right: 1px solid #333;
             padding: 20px;
-            min-height: calc(100vh - 80px);
+            overflow-y: auto;
         }
 
-        .sidebar-menu {
-            list-style: none;
-        }
-
-        .sidebar-menu li {
-            margin-bottom: 10px;
-        }
-
-        .sidebar-menu button {
+        .menu-item {
+            display: block;
             width: 100%;
             padding: 12px;
             background: transparent;
@@ -174,18 +148,18 @@
             border-radius: 6px;
             cursor: pointer;
             text-align: left;
-            font-size: 14px;
+            margin-bottom: 10px;
             transition: all 0.3s;
         }
 
-        .sidebar-menu button:hover,
-        .sidebar-menu button.active {
+        .menu-item:hover,
+        .menu-item.active {
             background: #1877f2;
             color: white;
             border-color: #1877f2;
         }
 
-        .main-content {
+        .content {
             flex: 1;
             padding: 30px;
             overflow-y: auto;
@@ -205,88 +179,21 @@
             color: #1877f2;
         }
 
-        /* Articles Section */
-        .articles-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .article-card {
+        .card {
             background: #1a1a1a;
             border: 1px solid #333;
             border-radius: 8px;
             padding: 20px;
-            transition: border-color 0.3s;
-        }
-
-        .article-card:hover {
-            border-color: #1877f2;
-        }
-
-        .article-card h3 {
-            color: #1877f2;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .article-card p {
-            color: #999;
-            font-size: 14px;
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-
-        .article-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-small {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-edit {
-            background: #1877f2;
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background: #0a66c2;
-        }
-
-        .btn-delete {
-            background: #e41e3f;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #c41830;
-        }
-
-        /* Form Styles */
-        .form-section {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 30px;
-            max-width: 600px;
-            margin-bottom: 30px;
-        }
-
-        .form-section h3 {
             margin-bottom: 20px;
-            color: #1877f2;
         }
 
-        .form-group textarea {
+        .card h3 {
+            color: #1877f2;
+            margin-bottom: 15px;
+        }
+
+        .form-input,
+        .form-textarea {
             width: 100%;
             padding: 12px;
             background: #0a0a0a;
@@ -294,12 +201,17 @@
             border-radius: 8px;
             color: #fff;
             font-size: 14px;
+            margin-bottom: 15px;
             font-family: inherit;
-            resize: vertical;
-            min-height: 200px;
         }
 
-        .form-group textarea:focus {
+        .form-textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
             outline: none;
             border-color: #1877f2;
         }
@@ -312,8 +224,7 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 14px;
-            transition: background 0.3s;
+            margin-right: 10px;
         }
 
         .btn-primary:hover {
@@ -328,23 +239,110 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 14px;
-            margin-left: 10px;
         }
 
         .btn-secondary:hover {
             background: #444;
         }
 
-        /* Stats */
-        .stats-grid {
+        .btn-danger {
+            background: #e41e3f;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-danger:hover {
+            background: #c41830;
+        }
+
+        .success-msg {
+            background: #0a5f0a;
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .item-card h4 {
+            color: #1877f2;
+            margin-bottom: 10px;
+        }
+
+        .item-card p {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .item-actions button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table th {
+            background: #0a0a0a;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            color: #1877f2;
+            font-weight: 600;
+        }
+
+        .table td {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            color: #999;
+        }
+
+        .table tr:hover {
+            background: #222;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
 
-        .stat-card {
+        .stat-box {
             background: #1a1a1a;
             border: 1px solid #333;
             border-radius: 8px;
@@ -364,47 +362,8 @@
             font-size: 14px;
         }
 
-        /* Submissions Table */
-        .submissions-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #1a1a1a;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #333;
-        }
-
-        .submissions-table th {
-            background: #0a0a0a;
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #333;
-            color: #1877f2;
-            font-weight: 600;
-        }
-
-        .submissions-table td {
-            padding: 15px;
-            border-bottom: 1px solid #333;
-            color: #999;
-            font-size: 14px;
-        }
-
-        .submissions-table tr:hover {
-            background: #222;
-        }
-
-        .success-message {
-            background: #0a5f0a;
-            color: #fff;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
         @media (max-width: 768px) {
-            .dashboard-content {
+            .container {
                 flex-direction: column;
             }
 
@@ -412,27 +371,19 @@
                 width: 100%;
                 border-right: none;
                 border-bottom: 1px solid #333;
-                min-height: auto;
                 display: flex;
                 overflow-x: auto;
+                padding: 10px;
             }
 
-            .sidebar-menu {
-                display: flex;
-                gap: 10px;
-            }
-
-            .sidebar-menu li {
-                margin-bottom: 0;
+            .menu-item {
                 flex-shrink: 0;
+                margin-right: 10px;
+                margin-bottom: 0;
             }
 
-            .articles-grid {
+            .grid {
                 grid-template-columns: 1fr;
-            }
-
-            .main-content {
-                padding: 20px;
             }
         }
     </style>
@@ -442,68 +393,72 @@
     <div id="loginPage" class="login-container">
         <div class="login-box">
             <h1>Jaimbo Admin</h1>
-            <p>Manage your website content</p>
-            <div id="errorMessage" class="error-message"></div>
+            <div class="error-msg" id="loginError"></div>
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="your-email@gmail.com" required>
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="hassaniejaimbo@gmail.com" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" placeholder="Enter password" required>
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="admin123" required>
                 </div>
-                <button type="submit" class="login-btn">Sign In</button>
+                <button type="submit" class="btn-login">Sign In</button>
             </form>
             <hr style="border: none; border-top: 1px solid #333; margin: 30px 0;">
-            <p style="color: #999; font-size: 12px; margin-bottom: 15px;">Demo Credentials:</p>
+            <p style="color: #999; font-size: 12px;">Demo Credentials:</p>
             <p style="color: #666; font-size: 12px;">Email: hassaniejaimbo@gmail.com</p>
             <p style="color: #666; font-size: 12px;">Password: admin123</p>
         </div>
     </div>
 
     <!-- Dashboard -->
-    <div id="dashboard" class="dashboard-container">
-        <div class="dashboard-header">
+    <div id="dashboard" class="dashboard">
+        <div class="header">
             <h1>Jaimbo Admin Dashboard</h1>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+            <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
 
-        <div class="dashboard-content">
+        <div class="container">
             <div class="sidebar">
-                <ul class="sidebar-menu">
-                    <li><button class="menu-btn active" data-section="overview">📊 Overview</button></li>
-                    <li><button class="menu-btn" data-section="live">🔴 Live Video</button></li>
-                    <li><button class="menu-btn" data-section="articles">📝 Articles</button></li>
-                    <li><button class="menu-btn" data-section="content">✏️ Edit Content</button></li>
-                    <li><button class="menu-btn" data-section="submissions">💬 Submissions</button></li>
-                    <li><button class="menu-btn" data-section="settings">⚙️ Settings</button></li>
-                </ul>
+                <button class="menu-item active" onclick="switchSection('overview', this)">📊 Overview</button>
+                <button class="menu-item" onclick="switchSection('live', this)">🔴 Live Video</button>
+                <button class="menu-item" onclick="switchSection('articles', this)">📝 Articles</button>
+                <button class="menu-item" onclick="switchSection('posts', this)">📢 Posts</button>
+                <button class="menu-item" onclick="switchSection('content', this)">✏️ Content</button>
+                <button class="menu-item" onclick="switchSection('gallery', this)">🖼️ Gallery</button>
+                <button class="menu-item" onclick="switchSection('submissions', this)">💬 Messages</button>
+                <button class="menu-item" onclick="switchSection('settings', this)">⚙️ Settings</button>
             </div>
 
-            <div class="main-content">
-                <!-- Overview Section -->
+            <div class="content">
+                <div class="success-msg" id="successMsg"></div>
+
+                <!-- Overview -->
                 <section id="overview" class="section active">
                     <h2>Dashboard Overview</h2>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number" id="totalArticles">0</div>
+                    <div class="stats">
+                        <div class="stat-box">
+                            <div class="stat-number" id="statArticles">0</div>
                             <div class="stat-label">Articles</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="totalSubmissions">0</div>
-                            <div class="stat-label">Form Submissions</div>
+                        <div class="stat-box">
+                            <div class="stat-number" id="statPosts">0</div>
+                            <div class="stat-label">Posts</div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-box">
+                            <div class="stat-number" id="statMessages">0</div>
+                            <div class="stat-label">Messages</div>
+                        </div>
+                        <div class="stat-box">
                             <div class="stat-number">84K</div>
                             <div class="stat-label">Followers</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-number">3.2K</div>
-                            <div class="stat-label">Top Reactions</div>
-                        </div>
                     </div>
-                    <p style="color: #999; margin-top: 20px;">Welcome to your admin dashboard! Use the menu to manage your website content.</p>
+                    <div class="card">
+                        <h3>Welcome to Jaimbo Admin</h3>
+                        <p>Manage your website content, articles, posts, and more from this dashboard.</p>
+                    </div>
                 </section>
 
                 <!-- Live Video Section -->
@@ -531,81 +486,124 @@
                     </div>
                 </section>
 
-                <!-- Articles Section -->
+                <!-- Articles -->
                 <section id="articles" class="section">
                     <h2>Articles</h2>
-                    <button class="btn-primary" onclick="showNewArticleForm()" style="margin-bottom: 20px;">+ New Article</button>
-                    <div id="successMessage" class="success-message"></div>
-                    <div id="articlesContainer" class="articles-grid"></div>
+                    <div class="card">
+                        <h3>Create New Article</h3>
+                        <input type="text" class="form-input" id="articleTitle" placeholder="Article Title">
+                        <textarea class="form-textarea" id="articleContent" placeholder="Article Content"></textarea>
+                        <button class="btn-primary" onclick="createArticle()">Create Article</button>
+                    </div>
+                    <div id="articlesList"></div>
                 </section>
 
-                <!-- Edit Content Section -->
+                <!-- Posts -->
+                <section id="posts" class="section">
+                    <h2>Posts</h2>
+                    <div class="card">
+                        <h3>Create New Post</h3>
+                        <input type="text" class="form-input" id="postTitle" placeholder="Post Title">
+                        <textarea class="form-textarea" id="postContent" placeholder="Post Content"></textarea>
+                        <button class="btn-primary" onclick="createPost()">Create Post</button>
+                    </div>
+                    <div id="postsList"></div>
+                </section>
+
+                <!-- Content Management -->
                 <section id="content" class="section">
                     <h2>Edit Website Content</h2>
-                    <div class="form-section">
+                    
+                    <div class="card">
                         <h3>Bio</h3>
-                        <div class="form-group">
-                            <label>Current Bio</label>
-                            <textarea id="bioText" placeholder="Update your bio...">The only way to do great work is to love what you do.</textarea>
-                        </div>
+                        <textarea class="form-textarea" id="bioText" placeholder="Your bio...">The only way to do great work is to love what you do.</textarea>
                         <button class="btn-primary" onclick="saveBio()">Save Bio</button>
                     </div>
 
-                    <div class="form-section">
+                    <div class="card">
+                        <h3>Tagline</h3>
+                        <input type="text" class="form-input" id="taglineText" placeholder="Your tagline..." value="Verified Digital Creator">
+                        <button class="btn-primary" onclick="saveTagline()">Save Tagline</button>
+                    </div>
+
+                    <div class="card">
                         <h3>Featured Story</h3>
-                        <div class="form-group">
-                            <label>Title</label>
-                            <input type="text" id="featuredTitle" placeholder="Featured story title" value="Political Analysis & Civic Education">
-                        </div>
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="featuredDesc" placeholder="Featured story description">Bold commentary on Kenyan politics and current affairs</textarea>
-                        </div>
+                        <input type="text" class="form-input" id="featuredTitle" placeholder="Title" value="Political Analysis & Civic Education">
+                        <textarea class="form-textarea" id="featuredDesc" placeholder="Description">Bold commentary on Kenyan politics and current affairs</textarea>
                         <button class="btn-primary" onclick="saveFeatured()">Save Featured Story</button>
                     </div>
-                </section>
 
-                <!-- Submissions Section -->
-                <section id="submissions" class="section">
-                    <h2>Contact Form Submissions</h2>
-                    <div id="submissionsContainer">
-                        <table class="submissions-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Subject</th>
-                                    <th>Message</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="submissionsBody">
-                                <tr>
-                                    <td colspan="5" style="text-align: center; color: #666;">Loading submissions...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="card">
+                        <h3>About Section</h3>
+                        <textarea class="form-textarea" id="aboutText" placeholder="About section content...">Verified Digital Creator with 84K followers</textarea>
+                        <button class="btn-primary" onclick="saveAbout()">Save About</button>
                     </div>
                 </section>
 
-                <!-- Settings Section -->
+                <!-- Gallery -->
+                <section id="gallery" class="section">
+                    <h2>Gallery</h2>
+                    <div class="card">
+                        <h3>Add Image</h3>
+                        <input type="text" class="form-input" id="imageUrl" placeholder="Image URL">
+                        <input type="text" class="form-input" id="imageCaption" placeholder="Image Caption">
+                        <button class="btn-primary" onclick="addImage()">Add Image</button>
+                    </div>
+                    <div id="galleryList"></div>
+                </section>
+
+                <!-- Submissions -->
+                <section id="submissions" class="section">
+                    <h2>Contact Form Submissions</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Subject</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissionsTable">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- Settings -->
                 <section id="settings" class="section">
                     <h2>Settings</h2>
-                    <div class="form-section">
+                    
+                    <div class="card">
                         <h3>Website Settings</h3>
-                        <div class="form-group">
-                            <label>Website Title</label>
-                            <input type="text" id="siteTitle" placeholder="Jaimbo" value="Jaimbo">
-                        </div>
-                        <div class="form-group">
-                            <label>Website Description</label>
-                            <textarea id="siteDesc" placeholder="Website description">Verified Digital Creator - Political Analysis & Civic Education</textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Admin Email</label>
-                            <input type="email" id="adminEmail" placeholder="admin@jaimbo.com" value="hassaniejaimbo@gmail.com">
-                        </div>
-                        <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
+                        <label>Site Title</label>
+                        <input type="text" class="form-input" id="siteTitle" value="Jaimbo">
+                        <label>Site Description</label>
+                        <textarea class="form-textarea" id="siteDesc">Verified Digital Creator - Political Analysis & Civic Education</textarea>
+                        <button class="btn-primary" onclick="saveWebsiteSettings()">Save Settings</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Admin Settings</h3>
+                        <label>Admin Email</label>
+                        <input type="email" class="form-input" id="adminEmail" value="hassaniejaimbo@gmail.com">
+                        <label>Admin Password</label>
+                        <input type="password" class="form-input" id="adminPassword" placeholder="Leave blank to keep current">
+                        <button class="btn-primary" onclick="saveAdminSettings()">Save Admin Settings</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Social Links</h3>
+                        <label>Facebook</label>
+                        <input type="text" class="form-input" id="facebookLink" placeholder="https://facebook.com/...">
+                        <label>Twitter</label>
+                        <input type="text" class="form-input" id="twitterLink" placeholder="https://twitter.com/...">
+                        <label>Instagram</label>
+                        <input type="text" class="form-input" id="instagramLink" placeholder="https://instagram.com/...">
+                        <button class="btn-primary" onclick="saveSocialLinks()">Save Social Links</button>
                     </div>
                 </section>
             </div>
@@ -613,49 +611,35 @@
     </div>
 
     <script>
-        // Updated admin credentials
         const ADMIN_EMAIL = 'hassaniejaimbo@gmail.com';
         const ADMIN_PASSWORD = 'admin123';
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             checkLogin();
-            setupMenuButtons();
-            loadArticles();
-            loadSubmissions();
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            loadAllData();
         });
 
-        // Login
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
 
             if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
                 localStorage.setItem('adminLoggedIn', 'true');
                 localStorage.setItem('adminEmail', email);
                 showDashboard();
             } else {
-                showError('Invalid email or password. Use: ' + ADMIN_EMAIL);
+                showLoginError('Invalid credentials');
             }
-        });
-
-        function showError(message) {
-            const errorEl = document.getElementById('errorMessage');
-            errorEl.textContent = message;
-            errorEl.style.display = 'block';
-            setTimeout(() => {
-                errorEl.style.display = 'none';
-            }, 5000);
         }
 
-        function showSuccess(message) {
-            const successEl = document.getElementById('successMessage');
-            successEl.textContent = message;
-            successEl.style.display = 'block';
-            setTimeout(() => {
-                successEl.style.display = 'none';
-            }, 5000);
+        function showLoginError(msg) {
+            const el = document.getElementById('loginError');
+            el.textContent = msg;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 5000);
         }
 
         function checkLogin() {
@@ -666,34 +650,20 @@
 
         function showDashboard() {
             document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'flex';
-            document.getElementById('dashboard').style.flexDirection = 'column';
+            document.getElementById('dashboard').classList.add('active');
         }
 
         function logout() {
-            localStorage.removeItem('adminLoggedIn');
-            localStorage.removeItem('adminEmail');
-            document.getElementById('loginPage').style.display = 'flex';
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('loginForm').reset();
+            localStorage.clear();
+            location.reload();
         }
 
-        function setupMenuButtons() {
-            document.querySelectorAll('.menu-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const section = this.getAttribute('data-section');
-                    switchSection(section, this);
-                });
-            });
-        }
-
-        function switchSection(sectionId, button) {
+        function switchSection(sectionId, btn) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
-            
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
-            button.classList.add('active');
-            
+            btn.classList.add('active');
+
             if (sectionId === 'submissions') {
                 loadSubmissions();
             }
@@ -702,99 +672,117 @@
             }
         }
 
-        // Articles Management
-        let articles = JSON.parse(localStorage.getItem('jaimboArticles')) || [];
+        function showSuccess(msg) {
+            const el = document.getElementById('successMsg');
+            el.textContent = '✅ ' + msg;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        // Articles
+        function createArticle() {
+            const title = document.getElementById('articleTitle').value;
+            const content = document.getElementById('articleContent').value;
+            if (!title || !content) return alert('Fill all fields');
+
+            let articles = JSON.parse(localStorage.getItem('articles')) || [];
+            articles.push({id: Date.now(), title, content, date: new Date().toLocaleDateString()});
+            localStorage.setItem('articles', JSON.stringify(articles));
+            document.getElementById('articleTitle').value = '';
+            document.getElementById('articleContent').value = '';
+            loadArticles();
+            showSuccess('Article created!');
+        }
 
         function loadArticles() {
-            const container = document.getElementById('articlesContainer');
-            document.getElementById('totalArticles').textContent = articles.length;
-            
-            if (articles.length === 0) {
-                container.innerHTML = '<p style="color: #999; grid-column: 1/-1;">No articles yet. Create your first article!</p>';
-                return;
-            }
-
-            container.innerHTML = articles.map((article, index) => `
-                <div class="article-card">
-                    <h3>${article.title}</h3>
-                    <p>${article.content.substring(0, 100)}...</p>
-                    <small style="color: #666;">${article.date}</small>
-                    <div class="article-actions" style="margin-top: 15px;">
-                        <button class="btn-small btn-edit" onclick="editArticle(${index})">Edit</button>
-                        <button class="btn-small btn-delete" onclick="deleteArticle(${index})">Delete</button>
+            const articles = JSON.parse(localStorage.getItem('articles')) || [];
+            document.getElementById('statArticles').textContent = articles.length;
+            const html = articles.map(a => `
+                <div class="card">
+                    <h3>${a.title}</h3>
+                    <p>${a.content.substring(0, 100)}...</p>
+                    <small style="color: #666;">${a.date}</small>
+                    <div style="margin-top: 10px;">
+                        <button class="btn-danger" onclick="deleteArticle(${a.id})">Delete</button>
                     </div>
                 </div>
             `).join('');
+            document.getElementById('articlesList').innerHTML = html || '<p style="color: #999;">No articles yet</p>';
         }
 
-        function showNewArticleForm() {
-            const title = prompt('Article Title:');
-            if (!title) return;
-            const content = prompt('Article Content:');
-            if (!content) return;
-
-            const article = {
-                title: title,
-                content: content,
-                date: new Date().toLocaleDateString()
-            };
-
-            articles.push(article);
-            localStorage.setItem('jaimboArticles', JSON.stringify(articles));
-            loadArticles();
-            showSuccess('✅ Article created successfully!');
-        }
-
-        function editArticle(index) {
-            const article = articles[index];
-            const title = prompt('Edit Title:', article.title);
-            if (title === null) return;
-            const content = prompt('Edit Content:', article.content);
-            if (content === null) return;
-
-            articles[index] = { 
-                title: title, 
-                content: content, 
-                date: article.date 
-            };
-            localStorage.setItem('jaimboArticles', JSON.stringify(articles));
-            loadArticles();
-            showSuccess('✅ Article updated successfully!');
-        }
-
-        function deleteArticle(index) {
-            if (confirm('Are you sure you want to delete this article?')) {
-                articles.splice(index, 1);
-                localStorage.setItem('jaimboArticles', JSON.stringify(articles));
+        function deleteArticle(id) {
+            if (confirm('Delete this article?')) {
+                let articles = JSON.parse(localStorage.getItem('articles')) || [];
+                articles = articles.filter(a => a.id !== id);
+                localStorage.setItem('articles', JSON.stringify(articles));
                 loadArticles();
-                showSuccess('✅ Article deleted successfully!');
+                showSuccess('Article deleted!');
             }
         }
 
-        // Content Management
+        // Posts
+        function createPost() {
+            const title = document.getElementById('postTitle').value;
+            const content = document.getElementById('postContent').value;
+            if (!title || !content) return alert('Fill all fields');
+
+            let posts = JSON.parse(localStorage.getItem('posts')) || [];
+            posts.push({id: Date.now(), title, content, date: new Date().toLocaleDateString()});
+            localStorage.setItem('posts', JSON.stringify(posts));
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postContent').value = '';
+            loadPosts();
+            showSuccess('Post created!');
+        }
+
+        function loadPosts() {
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            document.getElementById('statPosts').textContent = posts.length;
+            const html = posts.map(p => `
+                <div class="card">
+                    <h3>${p.title}</h3>
+                    <p>${p.content.substring(0, 100)}...</p>
+                    <small style="color: #666;">${p.date}</small>
+                    <div style="margin-top: 10px;">
+                        <button class="btn-danger" onclick="deletePost(${p.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('postsList').innerHTML = html || '<p style="color: #999;">No posts yet</p>';
+        }
+
+        function deletePost(id) {
+            if (confirm('Delete this post?')) {
+                let posts = JSON.parse(localStorage.getItem('posts')) || [];
+                posts = posts.filter(p => p.id !== id);
+                localStorage.setItem('posts', JSON.stringify(posts));
+                loadPosts();
+                showSuccess('Post deleted!');
+            }
+        }
+
+        // Content
         function saveBio() {
-            const bio = document.getElementById('bioText').value;
-            localStorage.setItem('jaimbo_bio', bio);
-            showSuccess('✅ Bio updated successfully!');
+            localStorage.setItem('bio', document.getElementById('bioText').value);
+            showSuccess('Bio saved!');
+        }
+
+        function saveTagline() {
+            localStorage.setItem('tagline', document.getElementById('taglineText').value);
+            showSuccess('Tagline saved!');
         }
 
         function saveFeatured() {
-            const featured = {
+            localStorage.setItem('featured', JSON.stringify({
                 title: document.getElementById('featuredTitle').value,
-                description: document.getElementById('featuredDesc').value
-            };
-            localStorage.setItem('jaimbo_featured', JSON.stringify(featured));
-            showSuccess('✅ Featured story updated successfully!');
+                desc: document.getElementById('featuredDesc').value
+            }));
+            showSuccess('Featured story saved!');
         }
 
-        function saveSettings() {
-            const settings = {
-                title: document.getElementById('siteTitle').value,
-                description: document.getElementById('siteDesc').value,
-                adminEmail: document.getElementById('adminEmail').value
-            };
-            localStorage.setItem('jaimbo_settings', JSON.stringify(settings));
-            showSuccess('✅ Settings saved successfully!');
+        function saveAbout() {
+            localStorage.setItem('about', document.getElementById('aboutText').value);
+            showSuccess('About section saved!');
         }
 
         // Live Video Management
@@ -867,32 +855,96 @@
                 .catch(err => showLiveError('❌ ' + err.message));
         }
 
-        // Load Submissions
+        // Gallery
+        function addImage() {
+            const url = document.getElementById('imageUrl').value;
+            const caption = document.getElementById('imageCaption').value;
+            if (!url) return alert('Enter image URL');
+
+            let gallery = JSON.parse(localStorage.getItem('gallery')) || [];
+            gallery.push({id: Date.now(), url, caption});
+            localStorage.setItem('gallery', JSON.stringify(gallery));
+            document.getElementById('imageUrl').value = '';
+            document.getElementById('imageCaption').value = '';
+            loadGallery();
+            showSuccess('Image added!');
+        }
+
+        function loadGallery() {
+            const gallery = JSON.parse(localStorage.getItem('gallery')) || [];
+            const html = gallery.map(img => `
+                <div class="item-card">
+                    <img src="${img.url}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;">
+                    <p>${img.caption}</p>
+                    <button class="btn-danger" onclick="deleteImage(${img.id})" style="width: 100%;">Delete</button>
+                </div>
+            `).join('');
+            document.getElementById('galleryList').innerHTML = html ? `<div class="grid">${html}</div>` : '<p style="color: #999;">No images yet</p>';
+        }
+
+        function deleteImage(id) {
+            if (confirm('Delete this image?')) {
+                let gallery = JSON.parse(localStorage.getItem('gallery')) || [];
+                gallery = gallery.filter(img => img.id !== id);
+                localStorage.setItem('gallery', JSON.stringify(gallery));
+                loadGallery();
+                showSuccess('Image deleted!');
+            }
+        }
+
+        // Submissions
         function loadSubmissions() {
             fetch('/api/submissions')
                 .then(r => r.json())
                 .then(data => {
-                    const tbody = document.getElementById('submissionsBody');
-                    if (data.submissions && data.submissions.length > 0) {
-                        tbody.innerHTML = data.submissions.map(sub => `
-                            <tr>
-                                <td>${sub.firstName} ${sub.lastName}</td>
-                                <td>${sub.email}</td>
-                                <td>${sub.subject}</td>
-                                <td>${sub.message.substring(0, 50)}...</td>
-                                <td>${new Date(sub.timestamp).toLocaleDateString()}</td>
-                            </tr>
-                        `).join('');
-                        document.getElementById('totalSubmissions').textContent = data.submissions.length;
-                    } else {
-                        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">No submissions yet</td></tr>';
-                        document.getElementById('totalSubmissions').textContent = '0';
-                    }
+                    const subs = data.submissions || [];
+                    document.getElementById('statMessages').textContent = subs.length;
+                    const html = subs.map(s => `
+                        <tr>
+                            <td>${s.firstName} ${s.lastName}</td>
+                            <td>${s.email}</td>
+                            <td>${s.subject}</td>
+                            <td>${s.message.substring(0, 50)}...</td>
+                            <td>${new Date(s.timestamp).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('');
+                    document.getElementById('submissionsTable').innerHTML = html || '<tr><td colspan="5" style="text-align: center;">No submissions</td></tr>';
                 })
-                .catch(err => {
-                    console.error('Error loading submissions:', err);
-                    document.getElementById('submissionsBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #e41e3f;">Error loading submissions</td></tr>';
-                });
+                .catch(err => console.error('Error loading submissions:', err));
+        }
+
+        // Settings
+        function saveWebsiteSettings() {
+            localStorage.setItem('websiteSettings', JSON.stringify({
+                title: document.getElementById('siteTitle').value,
+                desc: document.getElementById('siteDesc').value
+            }));
+            showSuccess('Website settings saved!');
+        }
+
+        function saveAdminSettings() {
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            if (email) localStorage.setItem('adminEmail', email);
+            if (password) localStorage.setItem('adminPassword', password);
+            showSuccess('Admin settings saved!');
+        }
+
+        function saveSocialLinks() {
+            localStorage.setItem('socialLinks', JSON.stringify({
+                facebook: document.getElementById('facebookLink').value,
+                twitter: document.getElementById('twitterLink').value,
+                instagram: document.getElementById('instagramLink').value
+            }));
+            showSuccess('Social links saved!');
+        }
+
+        // Load all data
+        function loadAllData() {
+            loadArticles();
+            loadPosts();
+            loadGallery();
+            loadSubmissions();
         }
     </script>
 </body>
