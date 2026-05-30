@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jaimbo Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <main class="admin-shell">
+    <section class="auth-panel" id="authPanel">
+      <div>
+        <a class="back-link" href="/">Back to site</a>
+        <h1>Admin Console</h1>
+        <p>Sign in with a Netlify Identity account assigned the admin role or matching the configured admin email.</p>
+      </div>
+
+      <form class="auth-form" id="loginForm">
+        <label>Email <input name="email" type="email" autocomplete="email" required /></label>
+        <label>Password <input name="password" type="password" autocomplete="current-password" required /></label>
+        <button type="submit">Sign In</button>
+      </form>
+
+      <form class="auth-form secondary" id="signupForm">
+        <h2>Create account</h2>
+        <label>Name <input name="name" type="text" autocomplete="name" required /></label>
+        <label>Email <input name="email" type="email" autocomplete="email" required /></label>
+        <label>Password <input name="password" type="password" autocomplete="new-password" minlength="8" required /></label>
+        <button type="submit">Request Access</button>
+      </form>
+
+      <p class="status" id="authStatus"></p>
+    </section>
+
+    <section class="dashboard hidden" id="dashboard">
+      <header class="admin-header">
+        <div>
+          <a class="back-link" href="/">Back to site</a>
+          <h1>Content Editor</h1>
+        </div>
+        <button type="button" id="logoutButton">Sign Out</button>
+      </header>
+
+      <form class="editor-grid" id="profileForm">
+        <div class="panel wide">
+          <h2>Profile</h2>
+          <div class="field-grid">
+            <label>Name <input name="name" required /></label>
+            <label>Title <input name="title" required /></label>
+            <label>Followers <input name="followers" /></label>
+            <label>Posts <input name="posts" /></label>
+            <label>Reach <input name="reach" /></label>
+            <label>Facebook URL <input name="facebookUrl" type="url" /></label>
+          </div>
+          <label>Tagline <textarea name="tagline" rows="3"></textarea></label>
+          <label>Profile picture <input name="profileImage" type="file" accept="image/*" /></label>
+          <button type="submit">Save Profile</button>
+        </div>
+      </form>
+
+      <section class="panel">
+        <div class="section-title">
+          <h2>Articles</h2>
+          <button type="button" id="newArticleButton">New Article</button>
+        </div>
+        <div class="article-list" id="articleList"></div>
+      </section>
+
+      <form class="panel article-editor" id="articleForm">
+        <input type="hidden" name="id" />
+        <h2 id="articleFormTitle">New Article</h2>
+        <label>Title <input name="title" required /></label>
+        <label>Excerpt <textarea name="excerpt" rows="3"></textarea></label>
+        <label>Body <textarea name="body" rows="8"></textarea></label>
+        <div class="field-grid">
+          <label>Status
+            <select name="status">
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
+          </label>
+          <label>Image <input name="image" type="file" accept="image/*" /></label>
+        </div>
+        <div class="button-row">
+          <button type="submit">Save Article</button>
+          <button type="button" class="danger" id="deleteArticleButton">Delete</button>
+        </div>
+      </form>
+
+      <p class="status" id="editorStatus"></p>
+    </section>
+  </main>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
