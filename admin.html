@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jaimbo Admin Dashboard</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --panel: #141517;
+            --panel-2: #1a1c1f;
+            --border: #2a2d33;
+            --border-soft: #1f2125;
+            --text: #ffffff;
+            --text-muted: #9aa0a6;
+            --text-dim: #6b7178;
+            --blue: #1877f2;
+            --blue-dark: #0a66c2;
+            --red: #e41e3f;
+            --red-dark: #c41830;
+            --green: #2ecc71;
+            --amber: #f5a623;
+            --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+            --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.4);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ─── LOGIN ─── */
+        .login-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at 30% 30%, #1a1d24 0%, #08090b 60%);
+            overflow: hidden;
+        }
+        .login-container::before,
+        .login-container::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: floatOrb 14s ease-in-out infinite;
+        }
+        .login-container::before {
+            width: 380px; height: 380px;
+            background: radial-gradient(circle, var(--blue) 0%, transparent 70%);
+            top: -120px; left: -120px;
+        }
+        .login-container::after {
+            width: 320px; height: 320px;
+            background: radial-gradient(circle, var(--red) 0%, transparent 70%);
+            bottom: -80px; right: -100px;
+            animation-delay: -7s;
+        }
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(40px, 40px); }
+        }
+
+        .login-box {
+            position: relative;
+            background: rgba(20, 22, 26, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 18px;
+            padding: 44px 38px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: var(--shadow-lg);
+            animation: loginRise 0.7s var(--ease) both;
+        }
+        @keyframes loginRise {
+            0%   { opacity: 0; transform: translateY(28px) scale(0.97); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .login-logo {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+        }
+        .login-logo-mark {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--blue) 0%, #5a9eff 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 20px;
+            box-shadow: 0 6px 18px rgba(24, 119, 242, 0.45);
+        }
+        .login-box h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text);
+        }
+        .login-sub {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-muted);
+            letter-spacing: 0.2px;
+        }
+        .form-group input,
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(10, 11, 13, 0.7);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .form-group input:focus,
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--blue);
+            background: rgba(10, 11, 13, 0.95);
+            box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.18);
+        }
+        .form-textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
+
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--blue) 0%, #2585f3 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: transform 0.2s var(--ease), box-shadow 0.2s ease, filter 0.2s ease;
+            box-shadow: 0 8px 20px rgba(24, 119, 242, 0.25);
+        }
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(24, 119, 242, 0.4);
+            filter: brightness(1.05);
+        }
+        .btn-login:active { transform: translateY(0); }
+
+        .error-msg {
+            background: rgba(228, 30, 63, 0.15);
+            border: 1px solid rgba(228, 30, 63, 0.4);
+            color: #ff8a9e;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 18px;
+            display: none;
+            font-size: 14px;
+            animation: shake 0.4s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        .login-footer {
+            margin-top: 26px;
+            padding-top: 22px;
+            border-top: 1px solid var(--border-soft);
+            font-size: 12px;
+            color: var(--text-dim);
+            text-align: center;
+        }
+
+        /* ─── DASHBOARD ─── */
+        .dashboard { display: none; }
+        .dashboard.active {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            animation: dashFade 0.5s ease both;
+        }
+        @keyframes dashFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .header {
+            background: rgba(20, 22, 26, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-soft);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            position: sticky; top: 0;
+            z-index: 10;
+        }
+
+        .header h1 {
+            color: var(--text);
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header h1 .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--blue);
+            box-shadow: 0 0 12px rgba(24, 119, 242, 0.8);
+        }
+
+        .header-right { display: flex; gap: 12px; align-items: center; }
+
+        .sync-badge {
+            font-size: 12px;
+            background: rgba(24, 119, 242, 0.12);
+            color: var(--blue);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            border: 1px solid rgba(24, 119, 242, 0.25);
+            transition: all 0.3s ease;
+        }
+        .sync-badge.live { background: rgba(46, 204, 113, 0.12); color: var(--green); border-color: rgba(46, 204, 113, 0.3); }
+        .sync-badge.error { background: rgba(228, 30, 63, 0.12); color: var(--red); border-color: rgba(228, 30, 63, 0.3); }
+
+        .btn-logout {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .btn-logout:hover {
+            background: rgba(228, 30, 63, 0.1);
+            color: #ff8a9e;
+            border-color: rgba(228, 30, 63, 0.4);
+        }
+
+        .container { display: flex; flex: 1; }
+
+        .sidebar {
+            width: 240px;
+            background: var(--panel);
+            border-right: 1px solid var(--border-soft);
+            padding: 20px 14px;
+            overflow-y: auto;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 11px 14px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-align: left;
+            margin-bottom: 4px;
+            transition: all 0.2s var(--ease);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            transform: translateX(2px);
+        }
+        .menu-item.active {
+            background: linear-gradient(135deg, var(--blue) 0%, #2585f3 100%);
+            color: white;
+            box-shadow: 0 6px 18px rgba(24, 119, 242, 0.3);
+        }
+
+        .content { flex: 1; padding: 28px 32px 60px; overflow-y: auto; }
+
+        .section { display: none; }
+        .section.active {
+            display: block;
+            animation: sectionRise 0.5s var(--ease) both;
+        }
+        @keyframes sectionRise {
+            0%   { opacity: 0; transform: translateY(12px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .section h2 {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+        .section-desc {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius);
+            padding: 22px;
+            margin-bottom: 18px;
+            transition: border-color 0.3s ease, transform 0.3s var(--ease);
+            animation: cardRise 0.45s var(--ease) both;
+        }
+        @keyframes cardRise {
+            0%   { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .card:hover {
+            border-color: var(--border);
+        }
+        .card h3 {
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.2px;
+        }
+        .card-desc {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        @media (max-width: 700px) { .form-row { grid-template-columns: 1fr; } }
+
+        .input-label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            margin-bottom: 14px;
+        }
+
+        .form-input.with-icon { padding-left: 38px; }
+        .input-wrap { position: relative; }
+        .input-wrap .input-icon {
+            position: absolute; left: 12px; top: 12px;
+            color: var(--text-dim); pointer-events: none;
+        }
+
+        /* Color input */
+        .color-picker-row {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+        }
+        .color-picker-row input[type="color"] {
+            width: 44px; height: 44px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            background: transparent;
+            padding: 4px;
+        }
+        .color-picker-row .form-input { margin-bottom: 0; flex: 1; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--blue) 0%, #2585f3 100%);
+            color: white;
+            padding: 11px 22px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            margin-right: 8px;
+            font-family: inherit;
+            transition: transform 0.2s var(--ease), box-shadow 0.2s ease, filter 0.2s ease;
+            box-shadow: 0 4px 12px rgba(24, 119, 242, 0.25);
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(24, 119, 242, 0.4);
+            filter: brightness(1.05);
+        }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            padding: 11px 22px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            font-family: inherit;
+            margin-right: 8px;
+            transition: all 0.2s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-dim);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: #ff8a9e;
+            padding: 8px 14px;
+            border: 1px solid rgba(228, 30, 63, 0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .btn-danger:hover {
+            background: rgba(228, 30, 63, 0.12);
+            border-color: var(--red);
+            color: #ff5571;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--green) 0%, #27ae60 100%);
+            color: white;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            margin-right: 6px;
+            transition: filter 0.2s ease;
+        }
+        .btn-success:hover { filter: brightness(1.1); }
+
+        .success-msg {
+            background: rgba(46, 204, 113, 0.12);
+            border: 1px solid rgba(46, 204, 113, 0.35);
+            color: #6deb9c;
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            font-weight: 600;
+            animation: msgIn 0.4s var(--ease);
+        }
+        @keyframes msgIn {
+            0%   { opacity: 0; transform: translateY(-8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .item-card {
+            background: var(--panel-2);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            transition: transform 0.3s var(--ease), border-color 0.3s ease;
+        }
+        .item-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border);
+        }
+        .item-card h4 { color: var(--text); margin-bottom: 8px; font-size: 14px; }
+        .item-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 10px; }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--panel);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .table th {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-soft);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .table td {
+            padding: 14px;
+            border-bottom: 1px solid var(--border-soft);
+            color: var(--text);
+            vertical-align: top;
+            font-size: 13px;
+        }
+        .table tr:hover { background: rgba(255, 255, 255, 0.02); }
+        .table tr.unread td { font-weight: 600; }
+        .table tr.unread td:first-child::before {
+            content: '';
+            display: inline-block;
+            width: 6px; height: 6px;
+            background: var(--blue);
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .msg-preview {
+            max-width: 320px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: var(--text-muted);
+        }
+        .table .actions-cell {
+            display: flex; gap: 6px; flex-wrap: wrap;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-box {
+            background: var(--panel);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius);
+            padding: 20px;
+            transition: transform 0.3s var(--ease), border-color 0.3s ease;
+            animation: cardRise 0.45s var(--ease) both;
+        }
+        .stat-box:nth-child(1) { animation-delay: 0.05s; }
+        .stat-box:nth-child(2) { animation-delay: 0.12s; }
+        .stat-box:nth-child(3) { animation-delay: 0.19s; }
+        .stat-box:nth-child(4) { animation-delay: 0.26s; }
+
+        .stat-box:hover {
+            transform: translateY(-4px);
+            border-color: rgba(24, 119, 242, 0.4);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+        }
+        .stat-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: rgba(24, 119, 242, 0.15);
+            color: var(--blue);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            margin-bottom: 14px;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+        .stat-label { color: var(--text-muted); font-size: 13px; }
+
+        .live-status-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            background: var(--panel-2);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-dim);
+            flex-shrink: 0;
+        }
+        .status-dot.live { background: var(--red); animation: pulse 1.6s infinite; }
+        .status-dot.scheduled { background: var(--amber); animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+            70% { box-shadow: 0 0 0 10px transparent; opacity: 0.7; }
+            100% { box-shadow: 0 0 0 0 transparent; opacity: 1; }
+        }
+
+        .status-select {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .status-pill {
+            padding: 9px 16px;
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            border-radius: 22px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.25s var(--ease);
+            font-family: inherit;
+        }
+        .status-pill:hover { color: var(--text); border-color: var(--text-dim); }
+        .status-pill.active {
+            background: var(--blue); color: white; border-color: var(--blue);
+            box-shadow: 0 4px 14px rgba(24, 119, 242, 0.35);
+        }
+        .status-pill[data-status="live"].active {
+            background: var(--red); border-color: var(--red);
+            box-shadow: 0 4px 14px rgba(228, 30, 63, 0.4);
+        }
+        .status-pill[data-status="scheduled"].active {
+            background: var(--amber); border-color: var(--amber); color: #1a1a1a;
+            box-shadow: 0 4px 14px rgba(245, 166, 35, 0.4);
+        }
+
+        /* Settings sub-tabs */
+        .settings-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-soft);
+            overflow-x: auto;
+            padding-bottom: 0;
+        }
+        .settings-tab {
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            font-family: inherit;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .settings-tab:hover { color: var(--text); }
+        .settings-tab.active {
+            color: var(--blue);
+            border-bottom-color: var(--blue);
+        }
+        .settings-panel { display: none; }
+        .settings-panel.active {
+            display: block;
+            animation: panelFade 0.35s var(--ease);
+        }
+        @keyframes panelFade {
+            0%   { opacity: 0; transform: translateY(6px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: backdropFade 0.25s ease;
+        }
+        .modal-backdrop.active { display: flex; }
+        @keyframes backdropFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalRise 0.35s var(--ease);
+        }
+        @keyframes modalRise {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .modal-head {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .modal h3 { font-size: 18px; color: var(--text); }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 26px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 6px;
+            transition: color 0.2s;
+        }
+        .modal-close:hover { color: var(--text); }
+        .modal-sub {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+        .modal-orig {
+            background: var(--panel-2);
+            border: 1px solid var(--border-soft);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            margin-bottom: 16px;
+            color: var(--text-muted);
+            font-size: 13px;
+            max-height: 160px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .modal-actions {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-soft);
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+            .menu-item {
+                flex-shrink: 0;
+                margin-right: 6px;
+                margin-bottom: 0;
+                min-width: max-content;
+            }
+            .content { padding: 20px 16px 60px; }
+            .grid { grid-template-columns: 1fr; }
+            .table { font-size: 12px; display: block; overflow-x: auto; }
+            .header { padding: 12px 16px; }
+            .header h1 { font-size: 16px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <div class="login-logo">
+                <div class="login-logo-mark">J</div>
+                <h1>Jaimbo Admin</h1>
+            </div>
+            <p class="login-sub">Sign in to manage your website</p>
+            <div class="error-msg" id="loginError"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="you@example.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-login">Sign In</button>
+            </form>
+            <div class="login-footer">
+                Authorized access only.
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="dashboard">
+        <div class="header">
+            <h1><span class="dot"></span> Jaimbo Admin</h1>
+            <div class="header-right">
+                <span class="sync-badge" id="syncBadge">Connecting…</span>
+                <button class="btn-logout" onclick="logout()">Sign out</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="sidebar">
+                <button class="menu-item active" onclick="switchSection('overview', this)">📊 Overview</button>
+                <button class="menu-item" onclick="switchSection('livestream', this)">🔴 Live Stream</button>
+                <button class="menu-item" onclick="switchSection('articles', this)">📝 Articles</button>
+                <button class="menu-item" onclick="switchSection('posts', this)">📢 Posts</button>
+                <button class="menu-item" onclick="switchSection('content', this)">✏️ Content</button>
+                <button class="menu-item" onclick="switchSection('gallery', this)">🖼️ Gallery</button>
+                <button class="menu-item" onclick="switchSection('submissions', this)">💬 Messages <span id="msgBadge" style="background:var(--blue);color:white;font-size:10px;padding:2px 7px;border-radius:10px;margin-left:auto;display:none;">0</span></button>
+                <button class="menu-item" onclick="switchSection('settings', this)">⚙️ Settings</button>
+            </div>
+
+            <div class="content">
+                <div class="success-msg" id="successMsg"></div>
+
+                <!-- Overview -->
+                <section id="overview" class="section active">
+                    <h2>Dashboard Overview</h2>
+                    <p class="section-desc">A snapshot of your live stream, content, and visitor messages.</p>
+                    <div class="stats">
+                        <div class="stat-box">
+                            <div class="stat-icon">📝</div>
+                            <div class="stat-number" id="statArticles">0</div>
+                            <div class="stat-label">Articles</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-icon">📢</div>
+                            <div class="stat-number" id="statPosts">0</div>
+                            <div class="stat-label">Posts</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-icon">💬</div>
+                            <div class="stat-number" id="statMessages">0</div>
+                            <div class="stat-label">Messages</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-icon">📺</div>
+                            <div class="stat-number" id="statArchive">0</div>
+                            <div class="stat-label">Archived Streams</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Welcome to Jaimbo Admin</h3>
+                        <p class="card-desc">Every change you make here syncs to <strong style="color:var(--blue);">jaimbo.live</strong> within 30 seconds. No deploys required.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Current Live Status</h3>
+                        <div class="live-status-bar">
+                            <span class="status-dot" id="overviewDot"></span>
+                            <strong id="overviewStatus">Offline</strong>
+                            <span id="overviewTitle" style="color:var(--text-muted);"></span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Live Stream -->
+                <section id="livestream" class="section">
+                    <h2>Live Stream</h2>
+                    <p class="section-desc">Control what your audience sees in the Live section on jaimbo.live.</p>
+
+                    <div class="card">
+                        <h3>Current Status</h3>
+                        <div class="live-status-bar">
+                            <span class="status-dot" id="liveStatusDot"></span>
+                            <strong id="liveStatusLabel">Offline</strong>
+                            <span id="liveStatusTitle" style="color:var(--text-muted);"></span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Publish a stream</h3>
+                        <p class="card-desc">Paste your YouTube or Facebook live link. Audience sees it within 30 s.</p>
+
+                        <label class="input-label">Stream status</label>
+                        <div class="status-select" id="statusSelect">
+                            <button class="status-pill" data-status="live">🔴 Live Now</button>
+                            <button class="status-pill" data-status="scheduled">⏰ Scheduled</button>
+                            <button class="status-pill active" data-status="offline">⚫ Offline</button>
+                        </div>
+
+                        <label class="input-label">Stream URL</label>
+                        <input type="text" class="form-input" id="livestreamLink" placeholder="https://www.youtube.com/watch?v=… or https://facebook.com/…">
+
+                        <label class="input-label">Stream title</label>
+                        <input type="text" class="form-input" id="livestreamTitle" placeholder="e.g. Live Political Discussion">
+
+                        <label class="input-label">Description (optional)</label>
+                        <textarea class="form-textarea" id="livestreamDesc" placeholder="A short description for your audience"></textarea>
+
+                        <button class="btn-primary" onclick="saveLiveStream()" id="saveLiveBtn">Save &amp; publish</button>
+                        <button class="btn-secondary" onclick="endStreamAndArchive()" id="endStreamBtn">End stream &amp; archive</button>
+                        <button class="btn-secondary" onclick="clearLiveStream()">Clear</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Stream archive</h3>
+                        <p class="card-desc">These appear under "Previous Streams" on your website.</p>
+                        <div id="archiveList"></div>
+                    </div>
+                </section>
+
+                <!-- Articles -->
+                <section id="articles" class="section">
+                    <h2>Articles</h2>
+                    <p class="section-desc">Long-form content for your audience.</p>
+                    <div class="card">
+                        <h3>Create new article</h3>
+                        <input type="text" class="form-input" id="articleTitle" placeholder="Article title">
+                        <textarea class="form-textarea" id="articleContent" placeholder="Article content"></textarea>
+                        <button class="btn-primary" onclick="createArticle()">Publish article</button>
+                    </div>
+                    <div id="articlesList"></div>
+                </section>
+
+                <!-- Posts -->
+                <section id="posts" class="section">
+                    <h2>Posts</h2>
+                    <p class="section-desc">Short updates and announcements.</p>
+                    <div class="card">
+                        <h3>Create new post</h3>
+                        <input type="text" class="form-input" id="postTitle" placeholder="Post title">
+                        <textarea class="form-textarea" id="postContent" placeholder="Post content"></textarea>
+                        <button class="btn-primary" onclick="createPost()">Publish post</button>
+                    </div>
+                    <div id="postsList"></div>
+                </section>
+
+                <!-- Content -->
+                <section id="content" class="section">
+                    <h2>Website content</h2>
+                    <p class="section-desc">Edit the copy that appears across your homepage.</p>
+
+                    <div class="card">
+                        <h3>Bio</h3>
+                        <textarea class="form-textarea" id="bioText" placeholder="Your bio…"></textarea>
+                        <button class="btn-primary" onclick="saveContentField('bio', 'bioText', 'Bio')">Save bio</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Tagline</h3>
+                        <input type="text" class="form-input" id="taglineText" placeholder="Your tagline…">
+                        <button class="btn-primary" onclick="saveContentField('tagline', 'taglineText', 'Tagline')">Save tagline</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>Featured story</h3>
+                        <input type="text" class="form-input" id="featuredTitle" placeholder="Title">
+                        <textarea class="form-textarea" id="featuredDesc" placeholder="Description"></textarea>
+                        <button class="btn-primary" onclick="saveFeatured()">Save featured story</button>
+                    </div>
+
+                    <div class="card">
+                        <h3>About section</h3>
+                        <textarea class="form-textarea" id="aboutText" placeholder="About section content…"></textarea>
+                        <button class="btn-primary" onclick="saveContentField('about', 'aboutText', 'About')">Save about</button>
+                    </div>
+                </section>
+
+                <!-- Gallery -->
+                <section id="gallery" class="section">
+                    <h2>Gallery</h2>
+                    <p class="section-desc">Images displayed on your website.</p>
+                    <div class="card">
+                        <h3>Add image</h3>
+                        <input type="text" class="form-input" id="imageUrl" placeholder="Image URL (https://…)">
+                        <input type="text" class="form-input" id="imageCaption" placeholder="Caption">
+                        <button class="btn-primary" onclick="addImage()">Add image</button>
+                    </div>
+                    <div id="galleryList"></div>
+                </section>
+
+                <!-- Messages -->
+                <section id="submissions" class="section">
+                    <h2>Contact messages</h2>
+                    <p class="section-desc">Messages submitted by visitors on jaimbo.live appear here in real time.</p>
+                    <div style="margin-bottom: 16px;">
+                        <button class="btn-secondary" onclick="loadFromCloud(true)">↻ Refresh</button>
+                        <button class="btn-secondary" onclick="markAllRead()">Mark all read</button>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>From</th>
+                                <th>Email</th>
+                                <th>Subject</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissionsTable">
+                            <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No messages yet</td></tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- Settings -->
+                <section id="settings" class="section">
+                    <h2>Settings</h2>
+                    <p class="section-desc">Configure your site identity, hero, brand, social links, contact info, and security.</p>
+
+                    <div class="settings-tabs">
+                        <button class="settings-tab active" onclick="switchSettingsTab('identity', this)">Site identity</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('hero', this)">Hero</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('brand', this)">Brand colors</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('social', this)">Social links</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('contact', this)">Contact info</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('seo', this)">SEO &amp; footer</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('security', this)">Security</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('sync', this)">Cloud sync</button>
+                    </div>
+
+                    <div id="settings-identity" class="settings-panel active">
+                        <div class="card">
+                            <h3>Site identity</h3>
+                            <p class="card-desc">Your site name and tagline.</p>
+                            <label class="input-label">Site title</label>
+                            <input type="text" class="form-input" id="siteTitle" placeholder="Jaimbo">
+                            <label class="input-label">Site description (for browser tab and search engines)</label>
+                            <textarea class="form-textarea" id="siteDesc" placeholder="Verified Digital Creator — Political Analysis &amp; Civic Education"></textarea>
+                            <label class="input-label">Logo URL (optional)</label>
+                            <input type="text" class="form-input" id="siteLogoUrl" placeholder="https://…">
+                            <label class="input-label">Favicon URL (optional)</label>
+                            <input type="text" class="form-input" id="siteFavicon" placeholder="https://…/favicon.ico">
+                            <button class="btn-primary" onclick="saveIdentity()">Save identity</button>
+                        </div>
+                    </div>
+
+                    <div id="settings-hero" class="settings-panel">
+                        <div class="card">
+                            <h3>Hero section</h3>
+                            <p class="card-desc">The headline area at the top of your homepage.</p>
+                            <label class="input-label">Hero headline</label>
+                            <input type="text" class="form-input" id="heroHeadline" placeholder="Hi, I'm Jaimbo.">
+                            <label class="input-label">Hero subtitle</label>
+                            <textarea class="form-textarea" id="heroSubtitle" placeholder="Verified Digital Creator with a passion for…"></textarea>
+                            <div class="form-row">
+                                <div>
+                                    <label class="input-label">Primary CTA text</label>
+                                    <input type="text" class="form-input" id="heroCtaText" placeholder="Watch Live">
+                                </div>
+                                <div>
+                                    <label class="input-label">Primary CTA link</label>
+                                    <input type="text" class="form-input" id="heroCtaLink" placeholder="#live">
+                                </div>
+                            </div>
+                            <button class="btn-primary" onclick="saveHero()">Save hero</button>
+                        </div>
+                    </div>
+
+                    <div id="settings-brand" class="settings-panel">
+                        <div class="card">
+                            <h3>Brand colors</h3>
+                            <p class="card-desc">Customize your site's accent colors. (Applied to the website on the next visitor reload.)</p>
+
+                            <label class="input-label">Primary color (used for buttons, links)</label>
+                            <div class="color-picker-row">
+                                <input type="color" id="brandPrimaryColor" value="#1877f2">
+                                <input type="text" class="form-input" id="brandPrimaryText" placeholder="#1877f2">
+                            </div>
+
+                            <label class="input-label">Accent color (used for live badge, highlights)</label>
+                            <div class="color-picker-row">
+                                <input type="color" id="brandAccentColor" value="#e41e3f">
+                                <input type="text" class="form-input" id="brandAccentText" placeholder="#e41e3f">
+                            </div>
+
+                            <button class="btn-primary" onclick="saveBrand()">Save brand colors</button>
+                        </div>
+                    </div>
+
+                    <div id="settings-social" class="settings-panel">
+                        <div class="card">
+                            <h3>Social links</h3>
+                            <p class="card-desc">Where visitors can find you online.</p>
+
+                            <label class="input-label">Facebook</label>
+                            <input type="text" class="form-input" id="socialFacebook" placeholder="https://facebook.com/…">
+
+                            <label class="input-label">X / Twitter</label>
+                            <input type="text" class="form-input" id="socialTwitter" placeholder="https://twitter.com/…">
+
+                            <label class="input-label">Instagram</label>
+                            <input type="text" class="form-input" id="socialInstagram" placeholder="https://instagram.com/…">
+
+                            <label class="input-label">YouTube</label>
+                            <input type="text" class="form-input" id="socialYoutube" placeholder="https://youtube.com/@…">
+
+                            <label class="input-label">TikTok</label>
+                            <input type="text" class="form-input" id="socialTiktok" placeholder="https://tiktok.com/@…">
+
+                            <label class="input-label">LinkedIn</label>
+                            <input type="text" class="form-input" id="socialLinkedin" placeholder="https://linkedin.com/in/…">
+
+                            <button class="btn-primary" onclick="saveSocial()">Save social links</button>
+                        </div>
+                    </div>
+
+                    <div id="settings-contact" class="settings-panel">
+                        <div class="card">
+                            <h3>Contact information</h3>
+                            <p class="card-desc">Shown on the contact section of your website.</p>
+
+                            <label class="input-label">Public contact email</label>
+                            <input type="email" class="form-input" id="contactEmail" placeholder="hello@jaimbo.live">
+
+                            <label class="input-label">Reply-from email (where replies are sent from)</label>
+                            <input type="email" class="form-input" id="replyFromEmail" placeholder="you@gmail.com">
+
+                            <label class="input-label">Phone (optional)</label>
+                            <input type="text" class="form-input" id="contactPhone" placeholder="+254 …">
+
+                            <label class="input-label">Location (optional)</label>
+                            <input type="text" class="form-input" id="contactLocation" placeholder="Nairobi, Kenya">
+
+                            <button class="btn-primary" onclick="saveContactInfo()">Save contact info</button>
+                        </div>
+                    </div>
+
+                    <div id="settings-seo" class="settings-panel">
+                        <div class="card">
+                            <h3>SEO</h3>
+                            <label class="input-label">Meta keywords</label>
+                            <input type="text" class="form-input" id="metaKeywords" placeholder="kenyan politics, civic education, …">
+                            <label class="input-label">OG image URL (for social sharing previews)</label>
+                            <input type="text" class="form-input" id="ogImage" placeholder="https://…">
+                            <button class="btn-primary" onclick="saveSeo()">Save SEO</button>
+                        </div>
+                        <div class="card">
+                            <h3>Footer</h3>
+                            <label class="input-label">Footer text</label>
+                            <input type="text" class="form-input" id="footerText" placeholder="© 2026 Jaimbo. All rights reserved.">
+                            <button class="btn-primary" onclick="saveFooter()">Save footer</button>
+                        </div>
+                    </div>
+
+                    <div id="settings-security" class="settings-panel">
+                        <div class="card">
+                            <h3>Account security</h3>
+                            <p class="card-desc">Change your admin login credentials. Your credentials are stored locally in this browser.</p>
+
+                            <label class="input-label">Admin email</label>
+                            <input type="email" class="form-input" id="adminEmail" placeholder="you@example.com">
+
+                            <label class="input-label">Current password (required to change password)</label>
+                            <input type="password" class="form-input" id="currentPassword" placeholder="••••••••">
+
+                            <label class="input-label">New password</label>
+                            <input type="password" class="form-input" id="newPassword" placeholder="••••••••">
+
+                            <label class="input-label">Confirm new password</label>
+                            <input type="password" class="form-input" id="confirmPassword" placeholder="••••••••">
+
+                            <button class="btn-primary" onclick="saveSecurity()">Update credentials</button>
+                        </div>
+                    </div>
+
+                    <div id="settings-sync" class="settings-panel">
+                        <div class="card">
+                            <h3>Cloud sync</h3>
+                            <p class="card-desc">Your live stream, archive, and messages are synced via a public JSON cloud endpoint.</p>
+                            <label class="input-label">Endpoint</label>
+                            <input type="text" class="form-input" id="endpointDisplay" readonly>
+                            <p style="color: var(--text-dim); font-size: 12px;">Last synced: <span id="lastSyncedDisplay">—</span></p>
+                            <button class="btn-secondary" onclick="loadFromCloud(true)">Re-sync now</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reply Modal -->
+    <div class="modal-backdrop" id="replyModal" onclick="if(event.target===this)closeReplyModal()">
+        <div class="modal">
+            <div class="modal-head">
+                <h3>Reply to message</h3>
+                <button class="modal-close" onclick="closeReplyModal()">&times;</button>
+            </div>
+            <p class="modal-sub" id="replyTo">To: …</p>
+
+            <label class="input-label">Original message</label>
+            <div class="modal-orig" id="replyOriginal"></div>
+
+            <label class="input-label">Subject</label>
+            <input type="text" class="form-input" id="replySubject">
+
+            <label class="input-label">Your reply</label>
+            <textarea class="form-textarea" id="replyBody" rows="6" placeholder="Type your reply…"></textarea>
+
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="sendReplyViaEmail()">Open email client</button>
+                <button class="btn-secondary" onclick="copyReplyToClipboard()">Copy reply text</button>
+                <button class="btn-secondary" onclick="closeReplyModal()">Cancel</button>
+            </div>
+            <p style="color: var(--text-dim); font-size: 12px; margin-top: 14px;">
+                The "Open email client" button creates an email pre-filled in your default mail app (Gmail, Outlook, Apple Mail, etc.).
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ─── Configuration ───
+        const CLOUD_SYNC_URL = 'https://api.jsonblob.com/019e7981-efa3-7fa6-a5b8-4ae7ab4bf7b0';
+        const DEFAULT_EMAIL = 'hassaniejaimbo@gmail.com';
+        const DEFAULT_PASSWORD = 'admin123';
+
+        // ─── State ───
+        let state = {
+            liveStream: null,
+            previousStreams: [],
+            articles: [],
+            posts: [],
+            gallery: [],
+            messages: [],
+            content: { bio: '', tagline: '', about: '', featured: { title: '', desc: '' } },
+            hero: { headline: '', subtitle: '', ctaText: '', ctaLink: '' },
+            brand: { primary: '#1877f2', accent: '#e41e3f' },
+            social: { facebook: '', twitter: '', instagram: '', youtube: '', tiktok: '', linkedin: '' },
+            contact: { email: '', replyFrom: '', phone: '', location: '' },
+            seo: { keywords: '', ogImage: '' },
+            footer: { text: '' },
+            settings: { siteTitle: 'Jaimbo', siteDesc: '', logoUrl: '', favicon: '' },
+            lastUpdated: null
+        };
+
+        let currentStatusChoice = 'offline';
+        let currentReplyMessage = null;
+
+        // ─── Init ───
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLogin();
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('endpointDisplay').value = CLOUD_SYNC_URL;
+
+            // Status pill selector
+            document.querySelectorAll('#statusSelect .status-pill').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#statusSelect .status-pill').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentStatusChoice = btn.dataset.status;
+                });
+            });
+
+            // Color picker sync
+            ['brandPrimary', 'brandAccent'].forEach(key => {
+                const colorInput = document.getElementById(key + 'Color');
+                const textInput = document.getElementById(key + 'Text');
+                if (colorInput && textInput) {
+                    colorInput.addEventListener('input', () => textInput.value = colorInput.value);
+                    textInput.addEventListener('input', () => {
+                        if (/^#[0-9a-f]{6}$/i.test(textInput.value)) colorInput.value = textInput.value;
+                    });
+                }
+            });
+
+            // Keyboard shortcut: Esc closes modal
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape') closeReplyModal();
+            });
+        });
+
+        // ─── Login ───
+        function getStoredCreds() {
+            return {
+                email: localStorage.getItem('adminEmailStored') || DEFAULT_EMAIL,
+                password: localStorage.getItem('adminPasswordStored') || DEFAULT_PASSWORD
+            };
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const creds = getStoredCreds();
+
+            if (email === creds.email && password === creds.password) {
+                localStorage.setItem('adminLoggedIn', 'true');
+                showDashboard();
+            } else {
+                showLoginError('Invalid email or password.');
+            }
+        }
+
+        function showLoginError(msg) {
+            const el = document.getElementById('loginError');
+            el.textContent = msg;
+            el.style.display = 'block';
+            el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        function checkLogin() {
+            if (localStorage.getItem('adminLoggedIn') === 'true') showDashboard();
+        }
+
+        function showDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            loadFromCloud(true);
+            setInterval(() => loadFromCloud(false), 30000);
+        }
+
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            location.reload();
+        }
+
+        function switchSection(sectionId, btn) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function switchSettingsTab(tabId, btn) {
+            document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('settings-' + tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function showSuccess(msg) {
+            const el = document.getElementById('successMsg');
+            el.textContent = '✓ ' + msg;
+            el.style.display = 'block';
+            el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        // ─── Cloud Sync ───
+        function setSyncBadge(s) {
+            const b = document.getElementById('syncBadge');
+            if (!b) return;
+            b.classList.remove('live', 'error');
+            if (s === 'syncing') b.textContent = 'Syncing…';
+            else if (s === 'ok')   { b.textContent = '● Synced'; b.classList.add('live'); }
+            else if (s === 'error'){ b.textContent = '⚠ Sync error'; b.classList.add('error'); }
+        }
+
+        async function loadFromCloud(initial) {
+            setSyncBadge('syncing');
+            try {
+                const res = await fetch(CLOUD_SYNC_URL + '?_=' + Date.now(), { cache: 'no-store' });
+                if (!res.ok) throw new Error('cloud fetch failed');
+                const data = await res.json();
+
+                state = {
+                    liveStream: data.liveStream || null,
+                    previousStreams: Array.isArray(data.previousStreams) ? data.previousStreams : [],
+                    articles: Array.isArray(data.articles) ? data.articles : [],
+                    posts: Array.isArray(data.posts) ? data.posts : [],
+                    gallery: Array.isArray(data.gallery) ? data.gallery : [],
+                    messages: Array.isArray(data.messages) ? data.messages : [],
+                    content: Object.assign({ bio: '', tagline: '', about: '', featured: { title: '', desc: '' } }, data.content || {}),
+                    hero: Object.assign({ headline: '', subtitle: '', ctaText: '', ctaLink: '' }, data.hero || {}),
+                    brand: Object.assign({ primary: '#1877f2', accent: '#e41e3f' }, data.brand || {}),
+                    social: Object.assign({ facebook: '', twitter: '', instagram: '', youtube: '', tiktok: '', linkedin: '' }, data.social || {}),
+                    contact: Object.assign({ email: '', replyFrom: '', phone: '', location: '' }, data.contact || {}),
+                    seo: Object.assign({ keywords: '', ogImage: '' }, data.seo || {}),
+                    footer: Object.assign({ text: '' }, data.footer || {}),
+                    settings: Object.assign({ siteTitle: 'Jaimbo', siteDesc: '', logoUrl: '', favicon: '' }, data.settings || {}),
+                    lastUpdated: data.lastUpdated || null
+                };
+
+                renderAll();
+                setSyncBadge('ok');
+                document.getElementById('lastSyncedDisplay').textContent = new Date().toLocaleString();
+                if (initial) showSuccess('Loaded from cloud');
+            } catch (err) {
+                setSyncBadge('error');
+                if (initial) {
+                    const el = document.getElementById('successMsg');
+                    el.style.background = 'rgba(228,30,63,0.12)';
+                    el.style.color = '#ff8a9e';
+                    el.style.borderColor = 'rgba(228,30,63,0.35)';
+                    el.textContent = '⚠ Could not connect to cloud. Check your internet.';
+                    el.style.display = 'block';
+                    setTimeout(() => { el.style.display = 'none'; el.style.background = ''; el.style.color = ''; el.style.borderColor = ''; }, 5000);
+                }
+            }
+        }
+
+        async function saveToCloud(successMsg) {
+            setSyncBadge('syncing');
+            try {
+                state.lastUpdated = new Date().toISOString();
+                // Re-fetch to merge new visitor messages
+                let merged = state;
+                try {
+                    const cur = await fetch(CLOUD_SYNC_URL + '?_=' + Date.now(), { cache: 'no-store' }).then(r => r.json());
+                    const known = new Set(state.messages.map(m => m.id));
+                    const newMsgs = (cur.messages || []).filter(m => m && m.id && !known.has(m.id));
+                    state.messages = state.messages.concat(newMsgs);
+                    merged = state;
+                } catch (_) {}
+                const res = await fetch(CLOUD_SYNC_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(merged)
+                });
+                if (!res.ok) throw new Error('PUT failed');
+                setSyncBadge('ok');
+                document.getElementById('lastSyncedDisplay').textContent = new Date().toLocaleString();
+                if (successMsg) showSuccess(successMsg);
+                renderAll();
+            } catch (err) {
+                setSyncBadge('error');
+                alert('Could not save. Please check your internet and try again.');
+            }
+        }
+
+        // ─── Render all ───
+        function renderAll() {
+            renderLiveStream();
+            renderArchive();
+            renderArticles();
+            renderPosts();
+            renderGallery();
+            renderMessages();
+            renderContent();
+            renderHero();
+            renderBrand();
+            renderSocial();
+            renderContactInfo();
+            renderSeo();
+            renderFooter();
+            renderSettingsIdentity();
+            renderOverview();
+        }
+
+        function renderOverview() {
+            document.getElementById('statArticles').textContent = state.articles.length;
+            document.getElementById('statPosts').textContent = state.posts.length;
+            document.getElementById('statMessages').textContent = state.messages.length;
+            document.getElementById('statArchive').textContent = state.previousStreams.length;
+
+            const dot = document.getElementById('overviewDot');
+            const label = document.getElementById('overviewStatus');
+            const title = document.getElementById('overviewTitle');
+            dot.classList.remove('live', 'scheduled');
+            if (state.liveStream && state.liveStream.status === 'live') {
+                dot.classList.add('live');
+                label.textContent = 'Live now';
+                title.textContent = state.liveStream.title || '';
+            } else if (state.liveStream && state.liveStream.status === 'scheduled') {
+                dot.classList.add('scheduled');
+                label.textContent = 'Scheduled';
+                title.textContent = state.liveStream.title || '';
+            } else {
+                label.textContent = 'Offline';
+                title.textContent = '';
+            }
+
+            // Unread message badge in sidebar
+            const unread = state.messages.filter(m => !m.read).length;
+            const badge = document.getElementById('msgBadge');
+            if (badge) {
+                if (unread > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = unread > 99 ? '99+' : unread;
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        // ─── Live Stream ───
+        function renderLiveStream() {
+            const dot = document.getElementById('liveStatusDot');
+            const label = document.getElementById('liveStatusLabel');
+            const title = document.getElementById('liveStatusTitle');
+            dot.classList.remove('live', 'scheduled');
+            const ls = state.liveStream;
+            if (ls && ls.status === 'live') {
+                dot.classList.add('live');
+                label.textContent = 'LIVE NOW';
+                title.textContent = ls.title ? ' — ' + ls.title : '';
+                currentStatusChoice = 'live';
+            } else if (ls && ls.status === 'scheduled') {
+                dot.classList.add('scheduled');
+                label.textContent = 'SCHEDULED';
+                title.textContent = ls.title ? ' — ' + ls.title : '';
+                currentStatusChoice = 'scheduled';
+            } else {
+                label.textContent = 'OFFLINE';
+                title.textContent = '';
+                currentStatusChoice = 'offline';
+            }
+            document.querySelectorAll('#statusSelect .status-pill').forEach(b => {
+                b.classList.toggle('active', b.dataset.status === currentStatusChoice);
+            });
+            if (ls) {
+                document.getElementById('livestreamLink').value = ls.url || '';
+                document.getElementById('livestreamTitle').value = ls.title || '';
+                document.getElementById('livestreamDesc').value = ls.desc || '';
+            }
+        }
+
+        async function saveLiveStream() {
+            const link = document.getElementById('livestreamLink').value.trim();
+            const title = document.getElementById('livestreamTitle').value.trim();
+            const desc = document.getElementById('livestreamDesc').value.trim();
+            const status = currentStatusChoice;
+
+            if (status === 'offline') {
+                state.liveStream = null;
+            } else {
+                if (!link) return alert('Please enter a stream link first.');
+                state.liveStream = {
+                    url: link, title, desc, status,
+                    startedAt: (state.liveStream && state.liveStream.startedAt) || new Date().toISOString()
+                };
+            }
+            const btn = document.getElementById('saveLiveBtn');
+            btn.disabled = true; btn.textContent = 'Saving…';
+            await saveToCloud('Live stream saved! Appears on jaimbo.live within 30s.');
+            btn.disabled = false; btn.textContent = 'Save & publish';
+        }
+
+        async function endStreamAndArchive() {
+            if (!state.liveStream || !state.liveStream.url) return alert('No active stream to archive.');
+            if (!confirm('End this stream and move it to the archive?')) return;
+            const archived = Object.assign({}, state.liveStream, {
+                id: 'stream_' + Date.now(),
+                endedAt: new Date().toISOString(),
+                status: 'archived'
+            });
+            state.previousStreams.push(archived);
+            state.liveStream = null;
+            const btn = document.getElementById('endStreamBtn');
+            btn.disabled = true; btn.textContent = 'Archiving…';
+            await saveToCloud('Stream archived');
+            btn.disabled = false; btn.textContent = 'End stream & archive';
+        }
+
+        async function clearLiveStream() {
+            if (!confirm('Clear the current live stream? (Archive is not affected)')) return;
+            state.liveStream = null;
+            document.getElementById('livestreamLink').value = '';
+            document.getElementById('livestreamTitle').value = '';
+            document.getElementById('livestreamDesc').value = '';
+            await saveToCloud('Live stream cleared');
+        }
+
+        function renderArchive() {
+            const wrap = document.getElementById('archiveList');
+            if (!wrap) return;
+            const list = state.previousStreams.slice().reverse();
+            if (list.length === 0) {
+                wrap.innerHTML = '<p style="color:var(--text-muted);">No archived streams yet. Use "End stream & archive" to save a finished stream.</p>';
+                return;
+            }
+            wrap.innerHTML = list.map(s => {
+                const date = s.endedAt ? new Date(s.endedAt).toLocaleString() : '';
+                return `
+                    <div class="item-card" style="margin-bottom: 10px;">
+                        <h4>${escapeHtml(s.title || 'Untitled stream')}</h4>
+                        <p style="color: var(--text-dim); font-size: 12px;">${escapeHtml(date)}</p>
+                        <p style="word-break: break-all;"><a href="${escapeHtml(s.url || '')}" target="_blank" style="color: var(--blue);">${escapeHtml(s.url || '')}</a></p>
+                        <button class="btn-danger" onclick="deleteArchive('${s.id}')">Delete</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function deleteArchive(id) {
+            if (!confirm('Delete this archived stream?')) return;
+            state.previousStreams = state.previousStreams.filter(s => s.id !== id);
+            await saveToCloud('Archived stream deleted');
+        }
+
+        // ─── Articles ───
+        async function createArticle() {
+            const title = document.getElementById('articleTitle').value.trim();
+            const content = document.getElementById('articleContent').value.trim();
+            if (!title || !content) return alert('Fill all fields');
+            state.articles.push({ id: 'art_' + Date.now(), title, content, date: new Date().toISOString() });
+            document.getElementById('articleTitle').value = '';
+            document.getElementById('articleContent').value = '';
+            await saveToCloud('Article published!');
+        }
+
+        function renderArticles() {
+            const html = state.articles.slice().reverse().map(a => `
+                <div class="card">
+                    <h3>${escapeHtml(a.title)}</h3>
+                    <p style="color:var(--text-muted);">${escapeHtml(String(a.content || '').substring(0, 200))}${(a.content || '').length > 200 ? '…' : ''}</p>
+                    <small style="color: var(--text-dim);">${formatDate(a.date)}</small>
+                    <div style="margin-top: 10px;">
+                        <button class="btn-danger" onclick="deleteArticle('${a.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('articlesList').innerHTML = html || '<p style="color: var(--text-muted);">No articles yet</p>';
+        }
+
+        async function deleteArticle(id) {
+            if (!confirm('Delete this article?')) return;
+            state.articles = state.articles.filter(a => a.id !== id);
+            await saveToCloud('Article deleted');
+        }
+
+        // ─── Posts ───
+        async function createPost() {
+            const title = document.getElementById('postTitle').value.trim();
+            const content = document.getElementById('postContent').value.trim();
+            if (!title || !content) return alert('Fill all fields');
+            state.posts.push({ id: 'post_' + Date.now(), title, content, date: new Date().toISOString() });
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postContent').value = '';
+            await saveToCloud('Post published!');
+        }
+
+        function renderPosts() {
+            const html = state.posts.slice().reverse().map(p => `
+                <div class="card">
+                    <h3>${escapeHtml(p.title)}</h3>
+                    <p style="color:var(--text-muted);">${escapeHtml(String(p.content || '').substring(0, 200))}${(p.content || '').length > 200 ? '…' : ''}</p>
+                    <small style="color: var(--text-dim);">${formatDate(p.date)}</small>
+                    <div style="margin-top: 10px;">
+                        <button class="btn-danger" onclick="deletePost('${p.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('postsList').innerHTML = html || '<p style="color: var(--text-muted);">No posts yet</p>';
+        }
+
+        async function deletePost(id) {
+            if (!confirm('Delete this post?')) return;
+            state.posts = state.posts.filter(p => p.id !== id);
+            await saveToCloud('Post deleted');
+        }
+
+        // ─── Content ───
+        function renderContent() {
+            document.getElementById('bioText').value = state.content.bio || '';
+            document.getElementById('taglineText').value = state.content.tagline || '';
+            document.getElementById('aboutText').value = state.content.about || '';
+            document.getElementById('featuredTitle').value = (state.content.featured && state.content.featured.title) || '';
+            document.getElementById('featuredDesc').value = (state.content.featured && state.content.featured.desc) || '';
+        }
+
+        async function saveContentField(field, inputId, label) {
+            state.content[field] = document.getElementById(inputId).value;
+            await saveToCloud(label + ' saved');
+        }
+
+        async function saveFeatured() {
+            state.content.featured = {
+                title: document.getElementById('featuredTitle').value,
+                desc: document.getElementById('featuredDesc').value
+            };
+            await saveToCloud('Featured story saved');
+        }
+
+        // ─── Gallery ───
+        async function addImage() {
+            const url = document.getElementById('imageUrl').value.trim();
+            const caption = document.getElementById('imageCaption').value.trim();
+            if (!url) return alert('Enter image URL');
+            state.gallery.push({ id: 'img_' + Date.now(), url, caption });
+            document.getElementById('imageUrl').value = '';
+            document.getElementById('imageCaption').value = '';
+            await saveToCloud('Image added');
+        }
+
+        function renderGallery() {
+            const html = state.gallery.map(img => `
+                <div class="item-card">
+                    <img src="${escapeHtml(img.url)}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;" onerror="this.style.opacity=0.3;">
+                    <p>${escapeHtml(img.caption || '')}</p>
+                    <button class="btn-danger" onclick="deleteImage('${img.id}')" style="width: 100%;">Delete</button>
+                </div>
+            `).join('');
+            document.getElementById('galleryList').innerHTML = html ? '<div class="grid">' + html + '</div>' : '<p style="color: var(--text-muted);">No images yet</p>';
+        }
+
+        async function deleteImage(id) {
+            if (!confirm('Delete this image?')) return;
+            state.gallery = state.gallery.filter(img => img.id !== id);
+            await saveToCloud('Image deleted');
+        }
+
+        // ─── Messages ───
+        function renderMessages() {
+            const tbody = document.getElementById('submissionsTable');
+            if (!tbody) return;
+            const list = state.messages.slice().reverse();
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No messages yet</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map(m => {
+                const name = ((m.firstName || '') + ' ' + (m.lastName || '')).trim() || '—';
+                return `
+                    <tr ${m.read ? '' : 'class="unread"'}>
+                        <td>${escapeHtml(name)}</td>
+                        <td><a href="mailto:${escapeHtml(m.email || '')}" style="color: var(--blue);">${escapeHtml(m.email || '')}</a></td>
+                        <td>${escapeHtml(m.subject || '—')}</td>
+                        <td class="msg-preview">${escapeHtml(m.message || '')}</td>
+                        <td style="color: var(--text-muted);">${formatDate(m.receivedAt)}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="btn-success" onclick="openReplyModal('${m.id}')">Reply</button>
+                                <button class="btn-danger" onclick="deleteMessage('${m.id}')">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function deleteMessage(id) {
+            if (!confirm('Delete this message?')) return;
+            state.messages = state.messages.filter(m => m.id !== id);
+            await saveToCloud('Message deleted');
+        }
+
+        async function markAllRead() {
+            let changed = false;
+            state.messages.forEach(m => { if (!m.read) { m.read = true; changed = true; } });
+            if (!changed) return showSuccess('Already all read');
+            await saveToCloud('All marked as read');
+        }
+
+        // Reply
+        function openReplyModal(id) {
+            const m = state.messages.find(x => x.id === id);
+            if (!m) return;
+            currentReplyMessage = m;
+            const name = ((m.firstName || '') + ' ' + (m.lastName || '')).trim() || m.email || 'visitor';
+            document.getElementById('replyTo').textContent = 'To: ' + name + ' <' + (m.email || '') + '>';
+            document.getElementById('replyOriginal').textContent = m.message || '';
+            document.getElementById('replySubject').value = m.subject ? ('Re: ' + m.subject) : 'Re: Your message';
+            document.getElementById('replyBody').value = '\n\n— Jaimbo\n\n\n--- On ' + formatDate(m.receivedAt) + ', ' + name + ' wrote ---\n' + (m.message || '');
+            document.getElementById('replyModal').classList.add('active');
+
+            // Mark as read
+            if (!m.read) {
+                m.read = true;
+                saveToCloud();
+            }
+        }
+
+        function closeReplyModal() {
+            document.getElementById('replyModal').classList.remove('active');
+            currentReplyMessage = null;
+        }
+
+        function sendReplyViaEmail() {
+            if (!currentReplyMessage) return;
+            const to = currentReplyMessage.email || '';
+            if (!to) return alert('No email address on this message.');
+            const subject = document.getElementById('replySubject').value;
+            const body = document.getElementById('replyBody').value;
+            const mailto = 'mailto:' + encodeURIComponent(to)
+                + '?subject=' + encodeURIComponent(subject)
+                + '&body=' + encodeURIComponent(body);
+            window.location.href = mailto;
+            showSuccess('Opened email client');
+            setTimeout(closeReplyModal, 500);
+        }
+
+        async function copyReplyToClipboard() {
+            const text = document.getElementById('replyBody').value;
+            try {
+                await navigator.clipboard.writeText(text);
+                showSuccess('Reply copied to clipboard');
+            } catch (_) {
+                // fallback
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showSuccess('Reply copied to clipboard');
+            }
+        }
+
+        // ─── Settings: Identity ───
+        function renderSettingsIdentity() {
+            document.getElementById('siteTitle').value = state.settings.siteTitle || 'Jaimbo';
+            document.getElementById('siteDesc').value  = state.settings.siteDesc  || '';
+            document.getElementById('siteLogoUrl').value = state.settings.logoUrl || '';
+            document.getElementById('siteFavicon').value = state.settings.favicon || '';
+        }
+        async function saveIdentity() {
+            state.settings.siteTitle = document.getElementById('siteTitle').value;
+            state.settings.siteDesc  = document.getElementById('siteDesc').value;
+            state.settings.logoUrl   = document.getElementById('siteLogoUrl').value;
+            state.settings.favicon   = document.getElementById('siteFavicon').value;
+            await saveToCloud('Site identity saved');
+        }
+
+        // Hero
+        function renderHero() {
+            document.getElementById('heroHeadline').value = state.hero.headline || '';
+            document.getElementById('heroSubtitle').value = state.hero.subtitle || '';
+            document.getElementById('heroCtaText').value  = state.hero.ctaText  || '';
+            document.getElementById('heroCtaLink').value  = state.hero.ctaLink  || '';
+        }
+        async function saveHero() {
+            state.hero = {
+                headline: document.getElementById('heroHeadline').value,
+                subtitle: document.getElementById('heroSubtitle').value,
+                ctaText:  document.getElementById('heroCtaText').value,
+                ctaLink:  document.getElementById('heroCtaLink').value
+            };
+            await saveToCloud('Hero section saved');
+        }
+
+        // Brand
+        function renderBrand() {
+            const p = state.brand.primary || '#1877f2';
+            const a = state.brand.accent  || '#e41e3f';
+            document.getElementById('brandPrimaryColor').value = p;
+            document.getElementById('brandPrimaryText').value  = p;
+            document.getElementById('brandAccentColor').value  = a;
+            document.getElementById('brandAccentText').value   = a;
+        }
+        async function saveBrand() {
+            state.brand = {
+                primary: document.getElementById('brandPrimaryText').value || '#1877f2',
+                accent:  document.getElementById('brandAccentText').value  || '#e41e3f'
+            };
+            await saveToCloud('Brand colors saved');
+        }
+
+        // Social
+        function renderSocial() {
+            ['facebook','twitter','instagram','youtube','tiktok','linkedin'].forEach(k => {
+                const el = document.getElementById('social' + k[0].toUpperCase() + k.slice(1));
+                if (el) el.value = state.social[k] || '';
+            });
+        }
+        async function saveSocial() {
+            ['facebook','twitter','instagram','youtube','tiktok','linkedin'].forEach(k => {
+                const el = document.getElementById('social' + k[0].toUpperCase() + k.slice(1));
+                if (el) state.social[k] = el.value;
+            });
+            await saveToCloud('Social links saved');
+        }
+
+        // Contact info
+        function renderContactInfo() {
+            document.getElementById('contactEmail').value    = state.contact.email     || '';
+            document.getElementById('replyFromEmail').value  = state.contact.replyFrom || '';
+            document.getElementById('contactPhone').value    = state.contact.phone     || '';
+            document.getElementById('contactLocation').value = state.contact.location  || '';
+        }
+        async function saveContactInfo() {
+            state.contact = {
+                email:     document.getElementById('contactEmail').value,
+                replyFrom: document.getElementById('replyFromEmail').value,
+                phone:     document.getElementById('contactPhone').value,
+                location:  document.getElementById('contactLocation').value
+            };
+            await saveToCloud('Contact info saved');
+        }
+
+        // SEO
+        function renderSeo() {
+            document.getElementById('metaKeywords').value = state.seo.keywords || '';
+            document.getElementById('ogImage').value      = state.seo.ogImage  || '';
+        }
+        async function saveSeo() {
+            state.seo = {
+                keywords: document.getElementById('metaKeywords').value,
+                ogImage:  document.getElementById('ogImage').value
+            };
+            await saveToCloud('SEO settings saved');
+        }
+
+        // Footer
+        function renderFooter() {
+            document.getElementById('footerText').value = state.footer.text || '';
+        }
+        async function saveFooter() {
+            state.footer = { text: document.getElementById('footerText').value };
+            await saveToCloud('Footer saved');
+        }
+
+        // Security (stored locally — never goes to public cloud)
+        function saveSecurity() {
+            const email = document.getElementById('adminEmail').value.trim();
+            const cur = document.getElementById('currentPassword').value;
+            const nw = document.getElementById('newPassword').value;
+            const cf = document.getElementById('confirmPassword').value;
+            const creds = getStoredCreds();
+
+            if (!email) return alert('Email cannot be empty.');
+
+            // Email change is allowed without password verification (so a user can recover by setting both at once)
+            const wantsPwChange = (nw || cf || cur);
+
+            if (wantsPwChange) {
+                if (cur !== creds.password) return alert('Current password is incorrect.');
+                if (!nw || nw.length < 6) return alert('New password must be at least 6 characters.');
+                if (nw !== cf) return alert('New passwords do not match.');
+                localStorage.setItem('adminPasswordStored', nw);
+            }
+
+            localStorage.setItem('adminEmailStored', email);
+
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            showSuccess('Credentials updated (stored locally in this browser).');
+        }
+
+        // Pre-fill admin email from storage on settings render
+        function renderSecurity() {
+            const creds = getStoredCreds();
+            document.getElementById('adminEmail').value = creds.email;
+        }
+
+        // ─── Helpers ───
+        function escapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+                { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+            ));
+        }
+        function formatDate(iso) {
+            if (!iso) return '';
+            try {
+                const d = new Date(iso);
+                if (isNaN(d.getTime())) return iso;
+                return d.toLocaleString('en-GB', {
+                    day: 'numeric', month: 'short', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+            } catch (_) { return iso; }
+        }
+
+        // Render security on load
+        document.addEventListener('DOMContentLoaded', renderSecurity);
+    </script>
+</body>
+</html>
