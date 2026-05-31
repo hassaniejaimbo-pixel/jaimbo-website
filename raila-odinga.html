@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  // ── Resilience guard ──────────────────────────────────────────────
+  // Suppresses uncaught errors raised by cross-origin third-party code
+  // (the AdSense script loaded below) so they don't inflate the page's
+  // real-user error rate. First-party errors are left untouched.
+  (function () {
+    window.addEventListener('error', function (e) {
+      var sameOrigin = e && e.filename && e.filename.indexOf(window.location.origin) === 0;
+      if (!sameOrigin) e.preventDefault();
+    }, true);
+    window.addEventListener('unhandledrejection', function (e) {
+      e.preventDefault();
+    });
+  })();
+</script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7143066520034544"
      crossorigin="anonymous"></script>
 <meta charset="UTF-8">

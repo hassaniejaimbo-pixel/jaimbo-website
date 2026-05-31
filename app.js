@@ -3,7 +3,8 @@
 // ===========================
 
 // Set current year in footer
-document.getElementById('year').textContent = new Date().getFullYear();
+const yearEl = document.getElementById('year');
+if (yearEl) yearEl.textContent = new Date().getFullYear();
 
 // Mobile nav toggle
 const navToggle = document.getElementById('navToggle');
