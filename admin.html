@@ -903,7 +903,9 @@
 
     <script>
         // ─── Configuration ───
-        const CLOUD_SYNC_URL = 'https://api.jsonblob.com/019e7981-efa3-7fa6-a5b8-4ae7ab4bf7b0';
+        // Shared content document, served by the /api/content Netlify Function
+        // (backed by Netlify Blobs). GET reads it; PUT (admin passcode) saves it.
+        const CLOUD_SYNC_URL = '/api/content';
         const DEFAULT_EMAIL = 'hassaniejaimbo@gmail.com';
         const DEFAULT_PASSWORD = 'admin123';
 
@@ -1098,7 +1100,10 @@
                 state.lastUpdated = new Date().toISOString();
                 const res = await fetch(CLOUD_SYNC_URL, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-admin-passcode': getStoredCreds().password
+                    },
                     body: JSON.stringify(state)
                 });
                 if (!res.ok) throw new Error('PUT failed');

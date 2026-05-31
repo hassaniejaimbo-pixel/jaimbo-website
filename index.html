@@ -5,8 +5,8 @@
     // ── Resilience guard ──────────────────────────────────────────────
     // Keeps the page from registering uncaught runtime errors that come
     // from third-party code we don't control: the AdSense script, embedded
-    // video iframes, and the periodic external feed fetches (jsonblob /
-    // rss2json). Cross-origin script failures arrive as an opaque
+    // video iframes, and the periodic external feed fetches (the Facebook
+    // rss2json proxy). Cross-origin script failures arrive as an opaque
     // "Script error." with no usable source — those are suppressed so they
     // stop inflating the real-user error rate. Genuine first-party errors
     // (with a real filename on this origin) are left untouched so they
@@ -2354,7 +2354,10 @@
 
     // ─── Live Video & Cloud Sync ───
     const FB_PROFILE = 'https://www.facebook.com/profile.php?id=61578836424894';
-    const CLOUD_SYNC_URL = 'https://api.jsonblob.com/019e7981-efa3-7fa6-a5b8-4ae7ab4bf7b0';
+    // Shared content document served by the /api/content Netlify Function
+    // (backed by Netlify Blobs). The site reads it to render articles, posts,
+    // gallery, music and live-stream info.
+    const CLOUD_SYNC_URL = '/api/content';
 
     // Turn a watch/share link into an embeddable player URL.
     function toEmbedUrl(raw) {
@@ -3008,16 +3011,12 @@
       status.textContent = '';
 
       try {
-        // Read current cloud state, append this message, write back
-        const cur = await fetch(CLOUD_SYNC_URL + '?_=' + Date.now(), { cache: 'no-store' }).then(r => r.json());
-        const next = Object.assign({}, cur, {
-          messages: Array.isArray(cur.messages) ? cur.messages.concat([payload]) : [payload],
-          lastUpdated: new Date().toISOString()
-        });
-        const put = await fetch(CLOUD_SYNC_URL, {
-          method: 'PUT',
+        // Append just this message server-side. The visitor never rewrites the
+        // rest of the content document, so admin edits are never clobbered.
+        const put = await fetch(CLOUD_SYNC_URL + '/message', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(next)
+          body: JSON.stringify(payload)
         });
         if (!put.ok) throw new Error('Could not send message. Please try again.');
 
