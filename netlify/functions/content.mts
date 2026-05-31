@@ -1,5 +1,6 @@
 import type { Config, Context } from '@netlify/functions'
 import { getStore } from '@netlify/blobs'
+import { verifyPasscode } from '../shared/admin-auth.mts'
 
 // Single source of truth for all editable site content: articles, posts,
 // gallery, music, live-stream config, site identity, brand, social links and
@@ -90,8 +91,7 @@ export default async (req: Request, _context: Context) => {
 
   // ── Replace the whole document (admin only) ──
   if (req.method === 'PUT') {
-    const expected = Netlify.env.get('ADMIN_PASSWORD') || 'admin123'
-    if ((req.headers.get('x-admin-passcode') || '') !== expected) {
+    if (!(await verifyPasscode(req.headers.get('x-admin-passcode') || ''))) {
       return Response.json({ error: 'Unauthorized.' }, { status: 401 })
     }
     let doc: ContentDoc

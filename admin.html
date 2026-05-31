@@ -971,22 +971,45 @@
         });
 
         // ─── Login ───
+        // The admin email/password live server-side (the /api/auth function,
+        // backed by a private blob), so the same credentials work on every
+        // device — phone included — and a password change syncs everywhere.
+        // After a successful sign-in we keep the working password as the
+        // "passcode" used to authorize content/media writes.
         function getStoredCreds() {
             return {
                 email: localStorage.getItem('adminEmailStored') || DEFAULT_EMAIL,
-                password: localStorage.getItem('adminPasswordStored') || DEFAULT_PASSWORD
+                password: getPasscode()
             };
         }
-        function handleLogin(e) {
+        function getPasscode() {
+            return localStorage.getItem('adminPasscode') || DEFAULT_PASSWORD;
+        }
+        async function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
+            const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
-            const creds = getStoredCreds();
-            if (email === creds.email && password === creds.password) {
+            const btn = e.target.querySelector('button[type="submit"]');
+            const original = btn ? btn.textContent : '';
+            if (btn) { btn.disabled = true; btn.textContent = 'Signing in…'; }
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                if (!res.ok) {
+                    showLoginError('Invalid email or password.');
+                    return;
+                }
                 localStorage.setItem('adminLoggedIn', 'true');
+                localStorage.setItem('adminEmailStored', email.toLowerCase());
+                localStorage.setItem('adminPasscode', password);
                 showDashboard();
-            } else {
-                showLoginError('Invalid email or password.');
+            } catch (_) {
+                showLoginError('Network error. Please check your connection and try again.');
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = original; }
             }
         }
         function showLoginError(msg) {
@@ -1895,25 +1918,38 @@
             state.content[field] = document.getElementById(inputId).value;
             await saveToCloud(label + ' saved');
         }
-        function saveSecurity() {
+        async function saveSecurity() {
             const email = document.getElementById('adminEmail').value.trim();
             const cur = document.getElementById('currentPassword').value;
             const nw = document.getElementById('newPassword').value;
             const cf = document.getElementById('confirmPassword').value;
-            const creds = getStoredCreds();
             if (!email) return showError('Email cannot be empty.');
             const wantsPwChange = (nw || cf || cur);
+            const body = { email };
             if (wantsPwChange) {
-                if (cur !== creds.password) return showError('Current password is incorrect.');
+                if (!cur) return showError('Enter your current password to change it.');
                 if (!nw || nw.length < 6) return showError('New password must be at least 6 characters.');
                 if (nw !== cf) return showError('New passwords do not match.');
-                localStorage.setItem('adminPasswordStored', nw);
+                body.currentPassword = cur;
+                body.newPassword = nw;
             }
-            localStorage.setItem('adminEmailStored', email);
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('confirmPassword').value = '';
-            showSuccess('Credentials updated (stored locally in this browser).');
+            try {
+                const res = await fetch('/api/auth/change', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-admin-passcode': getPasscode() },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) return showError(data.error || 'Could not update credentials.');
+                localStorage.setItem('adminEmailStored', email.toLowerCase());
+                if (wantsPwChange) localStorage.setItem('adminPasscode', nw);
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                showSuccess('Credentials updated — they now work on all your devices.');
+            } catch (_) {
+                showError('Network error. Please check your connection and try again.');
+            }
         }
         function renderSecurity() {
             const creds = getStoredCreds();
