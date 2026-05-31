@@ -486,6 +486,18 @@
                     </div>
 
                     <div class="card">
+                        <h3>Add a previous live stream</h3>
+                        <p class="card-desc">Manually add a past stream (e.g. an older YouTube or Facebook video) to the "Previous Streams" section without having to broadcast it again.</p>
+                        <label class="input-label">Title</label>
+                        <input type="text" class="form-input" id="prevStreamTitle" placeholder="e.g. Town Hall — March 2025">
+                        <label class="input-label">Video / stream URL</label>
+                        <input type="text" class="form-input" id="prevStreamUrl" placeholder="https://www.youtube.com/watch?v=… or https://facebook.com/…">
+                        <label class="input-label">Date (optional)</label>
+                        <input type="date" class="form-input" id="prevStreamDate">
+                        <button class="btn-primary" onclick="addPreviousStream()" id="addPrevStreamBtn">Add to previous streams</button>
+                    </div>
+
+                    <div class="card">
                         <h3>Direct streaming (RTMP)</h3>
                         <p class="card-desc">Broadcast straight to your website. Enter these ingest details into your broadcasting software (OBS, Streamlabs, Larix, etc.), then paste the public playback link so the stream plays right here on jaimbo.live.</p>
 
@@ -698,6 +710,7 @@
                         <button class="settings-tab" onclick="switchSettingsTab('social', this)">Social links</button>
                         <button class="settings-tab" onclick="switchSettingsTab('contact', this)">Contact info</button>
                         <button class="settings-tab" onclick="switchSettingsTab('seo', this)">SEO &amp; footer</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('visits', this)">Visits</button>
                         <button class="settings-tab" onclick="switchSettingsTab('security', this)">Security</button>
                         <button class="settings-tab" onclick="switchSettingsTab('sync', this)">Cloud sync</button>
                     </div>
@@ -816,6 +829,22 @@
                             <label class="input-label">Footer text</label>
                             <input type="text" class="form-input" id="footerText">
                             <button class="btn-primary" onclick="saveFooter()">Save footer</button>
+                        </div>
+                    </div>
+
+                    <div id="settings-visits" class="settings-panel">
+                        <div class="card">
+                            <h3>Website visits</h3>
+                            <p class="card-desc">Total visits to jaimbo.live, counted once per visitor session. This updates live as people browse your site.</p>
+                            <div class="stats">
+                                <div class="stat-box">
+                                    <div class="stat-icon">👁️</div>
+                                    <div class="stat-number" id="visitCount">—</div>
+                                    <div class="stat-label">Total visits</div>
+                                </div>
+                            </div>
+                            <p style="color: var(--text-dim); font-size: 12px;">Last refreshed: <span id="visitsRefreshed">—</span></p>
+                            <button class="btn-secondary" onclick="refreshVisitCount()">↻ Refresh count</button>
                         </div>
                     </div>
 
@@ -988,6 +1017,7 @@
             document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
             document.getElementById('settings-' + tabId).classList.add('active');
             btn.classList.add('active');
+            if (tabId === 'visits') refreshVisitCount();
         }
         function showSuccess(msg) {
             const el = document.getElementById('successMsg');
@@ -1090,41 +1120,97 @@
         // Sends the selected file to the media function (Netlify Blobs), then
         // writes the returned URL into the given text field. Shared by the
         // Articles, Posts and Gallery forms.
+        //
+        // Netlify Functions reject request bodies larger than ~6 MB, so a raw
+        // phone photo (often 4–12 MB) would silently fail to upload. To make
+        // photo uploads reliable, images are downscaled and re-encoded in the
+        // browser BEFORE they are sent — keeping them well under the limit.
+        const UPLOAD_LIMIT_BYTES = 5 * 1024 * 1024; // safe margin under the function limit
+
+        // Downscale + re-encode an image File to a smaller JPEG Blob using a
+        // canvas. Returns the original file untouched if it is not an image,
+        // is an SVG/GIF (which canvas would flatten), or if anything fails.
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                if (!file || !file.type || !file.type.startsWith('image/') ||
+                    file.type === 'image/gif' || file.type === 'image/svg+xml') {
+                    return resolve(file);
+                }
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    try {
+                        const MAX = 1920; // longest edge
+                        let { width, height } = img;
+                        if (width > MAX || height > MAX) {
+                            if (width >= height) { height = Math.round(height * MAX / width); width = MAX; }
+                            else { width = Math.round(width * MAX / height); height = MAX; }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            // Keep whichever is smaller — never make a file bigger.
+                            if (blob && blob.size > 0 && blob.size < file.size) {
+                                blob.name = (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg';
+                                resolve(blob);
+                            } else {
+                                resolve(file);
+                            }
+                        }, 'image/jpeg', 0.85);
+                    } catch (_) {
+                        resolve(file);
+                    }
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+                img.src = url;
+            });
+        }
+
         async function handleUpload(input, targetFieldId, onDone) {
-            const file = input.files && input.files[0];
-            if (!file) return;
+            const original = input.files && input.files[0];
+            if (!original) return;
             const statusEl = document.getElementById(targetFieldId + 'UploadStatus');
             const setStatus = (msg, cls) => {
                 if (!statusEl) return;
                 statusEl.textContent = msg;
                 statusEl.className = 'upload-status' + (cls ? ' ' + cls : '');
             };
-            if (file.size > 25 * 1024 * 1024) {
-                setStatus('File is too large (max 25 MB).', 'error');
-                input.value = '';
-                return;
-            }
-            setStatus('Uploading ' + file.name + '…');
+            // Reset the input early so re-selecting the same file still fires onchange.
+            input.value = '';
+
+            const displayName = original.name || 'photo';
             try {
+                setStatus('Preparing ' + displayName + '…');
+                const file = await compressImage(original);
+                const fileName = file.name || displayName;
+                if (file.size > UPLOAD_LIMIT_BYTES) {
+                    const mb = (file.size / (1024 * 1024)).toFixed(1);
+                    setStatus('File is too large (' + mb + ' MB). Images are auto-compressed; please use a file under 5 MB.', 'error');
+                    return;
+                }
+                setStatus('Uploading ' + fileName + '…');
                 const res = await fetch('/api/media', {
                     method: 'POST',
                     headers: {
                         'Content-Type': file.type || 'application/octet-stream',
-                        'x-file-name': encodeURIComponent(file.name),
+                        'x-file-name': encodeURIComponent(fileName),
                         'x-admin-passcode': getStoredCreds().password
                     },
                     body: file
                 });
                 const data = await res.json().catch(() => ({}));
-                if (!res.ok) throw new Error(data.error || 'Upload failed');
+                if (res.status === 401) throw new Error('Upload rejected: admin passcode does not match the server. Contact your administrator.');
+                if (!res.ok) throw new Error(data.error || ('Upload failed (' + res.status + ')'));
+                if (!data.url) throw new Error('Upload failed: no URL returned.');
                 const target = document.getElementById(targetFieldId);
                 if (target) target.value = data.url;
                 setStatus('✓ Uploaded', 'ok');
                 if (typeof onDone === 'function') onDone();
             } catch (err) {
                 setStatus(err.message || 'Upload failed. Please try again.', 'error');
-            } finally {
-                input.value = '';
             }
         }
 
@@ -1282,6 +1368,30 @@
             if (!confirm('Delete this archived stream?')) return;
             state.previousStreams = state.previousStreams.filter(s => s.id !== id);
             await saveToCloud('Archived stream deleted');
+        }
+        async function addPreviousStream() {
+            const title = document.getElementById('prevStreamTitle').value.trim();
+            const url = document.getElementById('prevStreamUrl').value.trim();
+            const dateVal = document.getElementById('prevStreamDate').value;
+            if (!url) return showError('Please paste the video / stream URL.');
+            const when = dateVal ? new Date(dateVal + 'T12:00:00').toISOString() : new Date().toISOString();
+            state.previousStreams.push({
+                id: 'stream_' + Date.now(),
+                title: title || 'Previous stream',
+                url,
+                status: 'archived',
+                startedAt: when,
+                endedAt: when
+            });
+            const btn = document.getElementById('addPrevStreamBtn');
+            btn.disabled = true; btn.textContent = 'Adding…';
+            const ok = await saveToCloud('Previous stream added! Live on the website within 30s.');
+            btn.disabled = false; btn.textContent = 'Add to previous streams';
+            if (ok) {
+                document.getElementById('prevStreamTitle').value = '';
+                document.getElementById('prevStreamUrl').value = '';
+                document.getElementById('prevStreamDate').value = '';
+            }
         }
 
         // ─── Articles ───
@@ -1803,6 +1913,23 @@
         function renderSecurity() {
             const creds = getStoredCreds();
             document.getElementById('adminEmail').value = creds.email;
+        }
+
+        // ─── Website visit count ───
+        async function refreshVisitCount() {
+            const el = document.getElementById('visitCount');
+            const stamp = document.getElementById('visitsRefreshed');
+            if (el) el.textContent = '…';
+            try {
+                const res = await fetch('/api/visits?_=' + Date.now(), { cache: 'no-store' });
+                if (!res.ok) throw new Error('failed');
+                const data = await res.json();
+                if (el) el.textContent = Number(data.count || 0).toLocaleString();
+                if (stamp) stamp.textContent = new Date().toLocaleString();
+            } catch (_) {
+                if (el) el.textContent = '—';
+                if (stamp) stamp.textContent = 'Could not load';
+            }
         }
 
         // ─── Facebook Feed ───

@@ -1757,6 +1757,27 @@
       50%      { box-shadow: 0 0 20px rgba(228,30,63,0.7), 0 0 0 6px rgba(228,30,63,0.0); }
     }
 
+    /* Scroll progress bar — fills as the page is scrolled */
+    #scrollProgress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0;
+      z-index: 2000;
+      background: linear-gradient(90deg, var(--blue), var(--red));
+      box-shadow: 0 0 12px rgba(24,119,242,0.5);
+      transition: width 0.1s linear;
+      pointer-events: none;
+    }
+
+    /* Gentle page entrance so the whole layout eases in on first paint.
+       CSS-only (no JS dependency) so it always completes. */
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    body { animation: pageIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
     /* Reduced motion */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -1848,6 +1869,9 @@
   </style>
 </head>
 <body>
+
+  <!-- Scroll progress indicator -->
+  <div id="scrollProgress" aria-hidden="true"></div>
 
   <!-- NAVBAR -->
   <nav>
@@ -2311,6 +2335,13 @@
       navLinks.forEach(link => {
         link.classList.toggle('active', link.getAttribute('href') === '#' + current);
       });
+      // Scroll progress bar
+      const bar = document.getElementById('scrollProgress');
+      if (bar) {
+        const docH = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = docH > 0 ? (window.scrollY / docH) * 100 : 0;
+        bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+      }
       _scrollTicking = false;
     }
     window.addEventListener('scroll', () => {
@@ -2934,6 +2965,15 @@
       document.querySelectorAll('.fade-in:not(.visible)').forEach(el => window._fadeObserver.observe(el));
     }
     armFadeIns();
+
+    // Count this visit once per browser session (persisted via Netlify Blobs).
+    (function countVisit() {
+      try {
+        if (sessionStorage.getItem('visitCounted')) return;
+        sessionStorage.setItem('visitCounted', '1');
+      } catch (_) { /* private mode: still count, just may double-count */ }
+      fetch('/api/visits', { method: 'POST', keepalive: true }).catch(() => {});
+    })();
 
     // Initial load
     hydrateStaticShareRows();
