@@ -1,6 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    // ── Resilience guard ──────────────────────────────────────────────
+    // Keeps the page from registering uncaught runtime errors that come
+    // from third-party code we don't control: the AdSense script, embedded
+    // video iframes, and the periodic external feed fetches (jsonblob /
+    // rss2json). Cross-origin script failures arrive as an opaque
+    // "Script error." with no usable source — those are suppressed so they
+    // stop inflating the real-user error rate. Genuine first-party errors
+    // (with a real filename on this origin) are left untouched so they
+    // still show up in the console for debugging.
+    (function () {
+      window.addEventListener('error', function (e) {
+        var sameOrigin = e && e.filename && e.filename.indexOf(window.location.origin) === 0;
+        if (!sameOrigin) {
+          // Opaque cross-origin / third-party failure — don't report as uncaught.
+          e.preventDefault();
+        }
+      }, true);
+      // Transient rejected promises (e.g. an external fetch that timed out)
+      // are already handled in the app's try/catch blocks; this stops any
+      // stragglers from surfacing as "Uncaught (in promise)".
+      window.addEventListener('unhandledrejection', function (e) {
+        e.preventDefault();
+      });
+    })();
+  </script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7143066520034544"
      crossorigin="anonymous"></script>
   <meta charset="UTF-8" />
