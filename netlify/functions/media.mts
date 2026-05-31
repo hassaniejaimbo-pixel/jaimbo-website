@@ -1,5 +1,6 @@
 import type { Config, Context } from '@netlify/functions'
 import { getStore } from '@netlify/blobs'
+import { verifyPasscode } from '../shared/admin-auth.mts'
 
 // Stores admin-uploaded files (photos and attachments) for articles, posts and
 // the gallery. Uploads (POST) require the admin passcode; serving (GET) is
@@ -64,8 +65,7 @@ export default async (req: Request, _context: Context) => {
 
   // ── Upload a file: POST /api/media (admin only) ──
   if (req.method === 'POST') {
-    const expected = Netlify.env.get('ADMIN_PASSWORD') || 'admin123'
-    if ((req.headers.get('x-admin-passcode') || '') !== expected) {
+    if (!(await verifyPasscode(req.headers.get('x-admin-passcode') || ''))) {
       return Response.json({ error: 'Unauthorized.' }, { status: 401 })
     }
 
