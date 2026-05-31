@@ -1983,9 +1983,20 @@
         <div class="section-label">Read</div>
         <h2 class="section-title">Latest Articles</h2>
       </div>
-      <div class="feed-grid" id="articlesGrid">
-        <div class="feed-empty">No articles yet.</div>
+      <div class="feed-grid">
+        <article class="feed-card fade-in">
+          <div class="feed-card-body">
+            <div class="feed-card-meta">Obituary · Kenya</div>
+            <h3 class="feed-card-title">They Could Not Break Him — Raila Odinga (1945–2025)</h3>
+            <p class="feed-card-excerpt">Six years in prison without trial. Five presidential defeats. A nation in flames. Raila Odinga outlasted them all — and left Kenya permanently changed.</p>
+            <div class="feed-card-footer">
+              <span>October 2025</span>
+              <a href="raila-odinga.html" class="feed-card-link">Read more →</a>
+            </div>
+          </div>
+        </article>
       </div>
+      <div class="feed-grid" id="articlesGrid"></div>
     </div>
   </section>
 
@@ -2383,7 +2394,7 @@
       _allArticlesCache = Array.isArray(list) ? list : [];
       const arr = Array.isArray(list) ? list.slice().reverse() : [];
       if (arr.length === 0) {
-        grid.innerHTML = '<div class="feed-empty">No articles yet. Check back soon.</div>';
+        grid.innerHTML = '';
         return;
       }
       grid.innerHTML = arr.map((a, i) => {
