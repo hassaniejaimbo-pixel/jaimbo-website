@@ -471,6 +471,31 @@
                         <p class="card-desc">These appear under "Previous Streams" on your website. Visitors can replay any of them.</p>
                         <div id="archiveList"></div>
                     </div>
+
+                    <div class="card">
+                        <h3>Direct streaming (RTMP)</h3>
+                        <p class="card-desc">Broadcast straight to your website. Enter these ingest details into your broadcasting software (OBS, Streamlabs, Larix, etc.), then paste the public playback link so the stream plays right here on jaimbo.live.</p>
+
+                        <label class="input-label">Ingest server (RTMP URL)</label>
+                        <input type="text" class="form-input" id="streamServer" placeholder="rtmp://live.example.com/app">
+
+                        <label class="input-label">Stream key</label>
+                        <div style="display:flex; gap:8px; align-items:stretch;">
+                            <input type="password" class="form-input" id="streamKey" placeholder="Your secret stream key" style="flex:1; margin-bottom:0;">
+                            <button class="btn-secondary" type="button" onclick="toggleStreamKey()" id="streamKeyToggle" style="white-space:nowrap;">Show</button>
+                        </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 4px;">
+                            <button class="btn-secondary" type="button" onclick="generateStreamKey()">Generate new key</button>
+                            <button class="btn-secondary" type="button" onclick="copyStreamValue('streamServer','Ingest server')">Copy server</button>
+                            <button class="btn-secondary" type="button" onclick="copyStreamValue('streamKey','Stream key')">Copy key</button>
+                        </div>
+
+                        <label class="input-label">Public playback link (HLS .m3u8 or embed URL)</label>
+                        <input type="text" class="form-input" id="streamHls" placeholder="https://…/stream.m3u8">
+                        <p style="color: var(--text-dim); font-size: 12px;">When a stream is set to <strong>Live Now</strong>, this link plays automatically in the website's Live section. Leave the Stream URL above empty to use this playback link.</p>
+
+                        <button class="btn-primary" onclick="saveStreaming()">Save streaming settings</button>
+                    </div>
                 </section>
 
                 <!-- Articles -->
@@ -478,11 +503,15 @@
                     <h2>Articles</h2>
                     <p class="section-desc">Long-form posts that appear in the "Latest Articles" section of your website.</p>
                     <div class="card">
-                        <h3>Create new article</h3>
+                        <h3 id="articleFormTitle">Create new article</h3>
                         <input type="text" class="form-input" id="articleTitle" placeholder="Article title">
-                        <input type="text" class="form-input" id="articleImage" placeholder="Cover image URL (optional)">
+                        <input type="text" class="form-input" id="articleImage" placeholder="Cover image / thumbnail URL (optional)">
+                        <div id="articleImagePreviewWrap" style="display:none; margin-bottom:14px;">
+                            <img id="articleImagePreview" alt="" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px;" onerror="this.parentElement.style.display='none';">
+                        </div>
                         <textarea class="form-textarea" id="articleContent" placeholder="Article body…" style="min-height: 220px;"></textarea>
                         <button class="btn-primary" onclick="createArticle()" id="publishArticleBtn">Publish article</button>
+                        <button class="btn-secondary" onclick="cancelArticleEdit()" id="cancelArticleBtn" style="display:none;">Cancel edit</button>
                     </div>
                     <div id="articlesList"></div>
                 </section>
@@ -647,6 +676,19 @@
                             <label class="input-label">Favicon URL (optional)</label>
                             <input type="text" class="form-input" id="siteFavicon" placeholder="https://…/favicon.ico">
                             <button class="btn-primary" onclick="saveIdentity()">Save identity</button>
+                        </div>
+                        <div class="card">
+                            <h3>Profile picture &amp; cover photo</h3>
+                            <p class="card-desc">These appear on your homepage hero. Paste a public image URL for each.</p>
+                            <label class="input-label">Profile picture URL</label>
+                            <input type="text" class="form-input" id="profilePicUrl" placeholder="https://…/profile.jpg" oninput="updateAppearancePreview()">
+                            <label class="input-label">Cover photo URL</label>
+                            <input type="text" class="form-input" id="coverPhotoUrl" placeholder="https://…/cover.jpg" oninput="updateAppearancePreview()">
+                            <div class="appearance-preview" id="appearancePreview" style="display:none; position:relative; border-radius:10px; overflow:hidden; margin-bottom:14px; border:1px solid var(--border-soft);">
+                                <img id="coverPhotoPreview" alt="" style="width:100%; height:130px; object-fit:cover; display:block; background:var(--panel-2);" onerror="this.style.opacity=0.2;">
+                                <img id="profilePicPreview" alt="" style="position:absolute; bottom:10px; left:16px; width:72px; height:72px; border-radius:50%; object-fit:cover; border:3px solid var(--panel); background:var(--panel-2);" onerror="this.style.opacity=0.2;">
+                            </div>
+                            <button class="btn-primary" onclick="saveAppearance()">Save profile &amp; cover</button>
                         </div>
                     </div>
 
@@ -820,6 +862,8 @@
             seo: { keywords: '', ogImage: '' },
             footer: { text: '' },
             settings: { siteTitle: 'Jaimbo', siteDesc: '', logoUrl: '', favicon: '' },
+            appearance: { profilePic: '', coverPhoto: '' },
+            streaming: { server: '', key: '', hlsUrl: '' },
             facebook: { rssUrl: '', sectionTitle: 'From Facebook', maxPosts: 6, enabled: false },
             lastUpdated: null
         };
@@ -940,7 +984,7 @@
                 ['previousStreams','articles','posts','gallery','music','messages','facebookPosts'].forEach(k => {
                     if (!Array.isArray(state[k])) state[k] = [];
                 });
-                ['content','hero','brand','social','contact','seo','footer','settings','facebook'].forEach(k => {
+                ['content','hero','brand','social','contact','seo','footer','settings','appearance','streaming','facebook'].forEach(k => {
                     if (!state[k] || typeof state[k] !== 'object') state[k] = JSON.parse(JSON.stringify(DEFAULT_STATE[k]));
                     else state[k] = Object.assign({}, DEFAULT_STATE[k], state[k]);
                 });
@@ -1021,6 +1065,8 @@
             renderSeo();
             renderFooter();
             renderSettingsIdentity();
+            renderAppearance();
+            renderStreaming();
             renderFacebook();
             renderOverview();
             renderSecurity();
@@ -1097,9 +1143,12 @@
             if (status === 'offline') {
                 state.liveStream = null;
             } else {
-                if (!link) return showError('Please enter a stream link first.');
+                // Fall back to the saved direct-streaming playback link when no
+                // explicit stream URL is entered.
+                const effectiveUrl = link || (state.streaming && state.streaming.hlsUrl) || '';
+                if (!effectiveUrl) return showError('Enter a stream link, or save a playback link in "Direct streaming" first.');
                 state.liveStream = {
-                    url: link, title, desc, status,
+                    url: effectiveUrl, title, desc, status,
                     startedAt: (state.liveStream && state.liveStream.startedAt) || new Date().toISOString()
                 };
             }
@@ -1156,44 +1205,110 @@
         }
 
         // ─── Articles ───
+        let editingArticleId = null;
+
+        function bindArticleImagePreview() {
+            const input = document.getElementById('articleImage');
+            if (!input || input._previewBound) return;
+            input._previewBound = true;
+            input.addEventListener('input', updateArticleImagePreview);
+        }
+        function updateArticleImagePreview() {
+            const url = document.getElementById('articleImage').value.trim();
+            const wrap = document.getElementById('articleImagePreviewWrap');
+            const img = document.getElementById('articleImagePreview');
+            if (url) { img.src = url; wrap.style.display = 'block'; }
+            else { wrap.style.display = 'none'; }
+        }
+
         async function createArticle() {
             const title = document.getElementById('articleTitle').value.trim();
             const content = document.getElementById('articleContent').value.trim();
             const image = document.getElementById('articleImage').value.trim();
             if (!title || !content) return showError('Please fill in the title and content.');
+
+            const btn = document.getElementById('publishArticleBtn');
+
+            // ── Update an existing article ──
+            if (editingArticleId) {
+                const existing = state.articles.find(a => a.id === editingArticleId);
+                if (!existing) { editingArticleId = null; return showError('Article no longer exists.'); }
+                const snapshot = Object.assign({}, existing);
+                existing.title = title;
+                existing.content = content;
+                existing.image = image;
+                existing.updatedAt = new Date().toISOString();
+                btn.disabled = true; btn.textContent = 'Saving…';
+                const ok = await saveToCloud('Article updated! Live on the website within 30s.');
+                btn.disabled = false; btn.textContent = 'Update article';
+                if (ok) { cancelArticleEdit(); }
+                else { Object.assign(existing, snapshot); renderArticles(); }
+                return;
+            }
+
+            // ── Create a new article ──
             const article = {
                 id: 'art_' + Date.now(),
                 title, content, image,
                 date: new Date().toISOString()
             };
             state.articles.push(article);
-            const btn = document.getElementById('publishArticleBtn');
             btn.disabled = true; btn.textContent = 'Publishing…';
             const ok = await saveToCloud('Article published! Live on the website within 30s.');
             btn.disabled = false; btn.textContent = 'Publish article';
             if (ok) {
-                document.getElementById('articleTitle').value = '';
-                document.getElementById('articleContent').value = '';
-                document.getElementById('articleImage').value = '';
+                clearArticleForm();
             } else {
                 // Roll back local change on failure
                 state.articles = state.articles.filter(a => a.id !== article.id);
                 renderArticles();
             }
         }
+        function editArticle(id) {
+            const a = state.articles.find(x => x.id === id);
+            if (!a) return showError('Article not found.');
+            editingArticleId = id;
+            document.getElementById('articleTitle').value = a.title || '';
+            document.getElementById('articleImage').value = a.image || '';
+            document.getElementById('articleContent').value = a.content || '';
+            updateArticleImagePreview();
+            document.getElementById('articleFormTitle').textContent = 'Edit article';
+            document.getElementById('publishArticleBtn').textContent = 'Update article';
+            document.getElementById('cancelArticleBtn').style.display = '';
+            document.getElementById('articleTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('articleTitle').focus();
+        }
+        function cancelArticleEdit() {
+            editingArticleId = null;
+            clearArticleForm();
+            document.getElementById('articleFormTitle').textContent = 'Create new article';
+            document.getElementById('publishArticleBtn').textContent = 'Publish article';
+            document.getElementById('cancelArticleBtn').style.display = 'none';
+        }
+        function clearArticleForm() {
+            document.getElementById('articleTitle').value = '';
+            document.getElementById('articleContent').value = '';
+            document.getElementById('articleImage').value = '';
+            updateArticleImagePreview();
+        }
         function renderArticles() {
+            bindArticleImagePreview();
             const html = state.articles.slice().reverse().map(a => `
                 <div class="card">
                     ${a.image ? `<img src="${escapeHtml(a.image)}" style="width:100%; max-height:220px; object-fit:cover; border-radius:8px; margin-bottom:14px;" onerror="this.style.display='none';">` : ''}
                     <h3>${escapeHtml(a.title)}</h3>
                     <p style="color:var(--text-muted);">${escapeHtml(String(a.content || '').substring(0, 220))}${(a.content || '').length > 220 ? '…' : ''}</p>
-                    <small style="color: var(--text-dim);">${formatDate(a.date)}</small>
-                    <div style="margin-top: 10px;"><button class="btn-danger" onclick="deleteArticle('${a.id}')">Delete</button></div>
+                    <small style="color: var(--text-dim);">${formatDate(a.date)}${a.updatedAt ? ' · edited ' + formatDate(a.updatedAt) : ''}</small>
+                    <div style="margin-top: 10px; display:flex; gap:8px;">
+                        <button class="btn-secondary" onclick="editArticle('${a.id}')">Edit</button>
+                        <button class="btn-danger" onclick="deleteArticle('${a.id}')">Delete</button>
+                    </div>
                 </div>`).join('');
             document.getElementById('articlesList').innerHTML = html || '<div class="empty">No articles yet. Publish your first one above.</div>';
         }
         async function deleteArticle(id) {
             if (!confirm('Delete this article?')) return;
+            if (editingArticleId === id) cancelArticleEdit();
             state.articles = state.articles.filter(a => a.id !== id);
             await saveToCloud('Article deleted');
         }
@@ -1406,6 +1521,83 @@
             state.settings.logoUrl   = document.getElementById('siteLogoUrl').value;
             state.settings.favicon   = document.getElementById('siteFavicon').value;
             await saveToCloud('Site identity saved');
+        }
+
+        // ─── Settings: Appearance (profile picture & cover photo) ───
+        function renderAppearance() {
+            const a = state.appearance || {};
+            const pic = document.getElementById('profilePicUrl');
+            const cov = document.getElementById('coverPhotoUrl');
+            if (pic) pic.value = a.profilePic || '';
+            if (cov) cov.value = a.coverPhoto || '';
+            updateAppearancePreview();
+        }
+        function updateAppearancePreview() {
+            const pic = document.getElementById('profilePicUrl').value.trim();
+            const cov = document.getElementById('coverPhotoUrl').value.trim();
+            const wrap = document.getElementById('appearancePreview');
+            if (!wrap) return;
+            if (pic || cov) {
+                wrap.style.display = 'block';
+                const cp = document.getElementById('coverPhotoPreview');
+                const pp = document.getElementById('profilePicPreview');
+                cp.style.opacity = 1; pp.style.opacity = 1;
+                cp.src = cov || ''; pp.src = pic || '';
+            } else {
+                wrap.style.display = 'none';
+            }
+        }
+        async function saveAppearance() {
+            state.appearance = {
+                profilePic: document.getElementById('profilePicUrl').value.trim(),
+                coverPhoto: document.getElementById('coverPhotoUrl').value.trim()
+            };
+            await saveToCloud('Profile picture & cover photo saved');
+        }
+
+        // ─── Live Stream: direct streaming (RTMP) ───
+        function renderStreaming() {
+            const s = state.streaming || {};
+            const srv = document.getElementById('streamServer');
+            const key = document.getElementById('streamKey');
+            const hls = document.getElementById('streamHls');
+            if (srv) srv.value = s.server || '';
+            if (key) key.value = s.key || '';
+            if (hls) hls.value = s.hlsUrl || '';
+        }
+        async function saveStreaming() {
+            state.streaming = {
+                server: document.getElementById('streamServer').value.trim(),
+                key:    document.getElementById('streamKey').value.trim(),
+                hlsUrl: document.getElementById('streamHls').value.trim()
+            };
+            await saveToCloud('Streaming settings saved');
+        }
+        function toggleStreamKey() {
+            const input = document.getElementById('streamKey');
+            const btn = document.getElementById('streamKeyToggle');
+            if (input.type === 'password') { input.type = 'text'; btn.textContent = 'Hide'; }
+            else { input.type = 'password'; btn.textContent = 'Show'; }
+        }
+        function generateStreamKey() {
+            const rand = () => Math.random().toString(36).slice(2, 8);
+            const key = 'live_' + rand() + rand() + rand();
+            const input = document.getElementById('streamKey');
+            input.type = 'text';
+            document.getElementById('streamKeyToggle').textContent = 'Hide';
+            input.value = key;
+            showSuccess('New stream key generated. Remember to Save.');
+        }
+        async function copyStreamValue(id, label) {
+            const val = document.getElementById(id).value;
+            if (!val) return showError(label + ' is empty.');
+            try { await navigator.clipboard.writeText(val); showSuccess(label + ' copied to clipboard'); }
+            catch (_) {
+                const ta = document.createElement('textarea');
+                ta.value = val; document.body.appendChild(ta); ta.select();
+                document.execCommand('copy'); document.body.removeChild(ta);
+                showSuccess(label + ' copied to clipboard');
+            }
         }
         function renderHero() {
             document.getElementById('heroHeadline').value = state.hero.headline || '';
