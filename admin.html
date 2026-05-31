@@ -189,6 +189,19 @@
             margin-right: 8px; transition: all 0.2s;
         }
         .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--text-dim); }
+        .upload-row { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; flex-wrap: wrap; }
+        .btn-upload {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.06); color: var(--text);
+            padding: 10px 18px; border: 1px dashed var(--border);
+            border-radius: var(--radius-sm); cursor: pointer;
+            font-weight: 600; font-size: 13px; font-family: inherit;
+            transition: all 0.2s;
+        }
+        .btn-upload:hover { background: rgba(24,119,242,0.12); border-color: var(--blue); }
+        .upload-status { font-size: 12px; color: var(--text-muted); }
+        .upload-status.error { color: #ff8a9e; }
+        .upload-status.ok { color: #34c759; }
         .btn-danger {
             background: transparent; color: #ff8a9e;
             padding: 8px 14px; border: 1px solid rgba(228,30,63,0.3);
@@ -505,7 +518,13 @@
                     <div class="card">
                         <h3 id="articleFormTitle">Create new article</h3>
                         <input type="text" class="form-input" id="articleTitle" placeholder="Article title">
-                        <input type="text" class="form-input" id="articleImage" placeholder="Cover image / thumbnail URL (optional)">
+                        <input type="text" class="form-input" id="articleImage" placeholder="Cover image / thumbnail URL — or upload below">
+                        <div class="upload-row">
+                            <label class="btn-upload">📎 Upload photo / file
+                                <input type="file" accept="image/*" hidden onchange="handleUpload(this, 'articleImage', updateArticleImagePreview)">
+                            </label>
+                            <span class="upload-status" id="articleImageUploadStatus"></span>
+                        </div>
                         <div id="articleImagePreviewWrap" style="display:none; margin-bottom:14px;">
                             <img id="articleImagePreview" alt="" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px;" onerror="this.parentElement.style.display='none';">
                         </div>
@@ -524,6 +543,16 @@
                         <h3>Create new post</h3>
                         <input type="text" class="form-input" id="postTitle" placeholder="Post title">
                         <textarea class="form-textarea" id="postContent" placeholder="Post content"></textarea>
+                        <input type="text" class="form-input" id="postImage" placeholder="Photo / attachment URL (optional) — or upload below">
+                        <div class="upload-row">
+                            <label class="btn-upload">📎 Upload photo / file
+                                <input type="file" hidden onchange="handleUpload(this, 'postImage', updatePostImagePreview)">
+                            </label>
+                            <span class="upload-status" id="postImageUploadStatus"></span>
+                        </div>
+                        <div id="postImagePreviewWrap" style="display:none; margin-bottom:14px;">
+                            <img id="postImagePreview" alt="" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px;" onerror="this.parentElement.style.display='none';">
+                        </div>
                         <button class="btn-primary" onclick="createPost()" id="publishPostBtn">Publish post</button>
                     </div>
                     <div id="postsList"></div>
@@ -535,8 +564,17 @@
                     <p class="section-desc">Images shown in your photo gallery (with lightbox on the website).</p>
                     <div class="card">
                         <h3>Add image</h3>
-                        <input type="text" class="form-input" id="imageUrl" placeholder="Image URL (https://…)">
+                        <input type="text" class="form-input" id="imageUrl" placeholder="Image URL (https://…) — or upload below">
                         <input type="text" class="form-input" id="imageCaption" placeholder="Caption (optional)">
+                        <div class="upload-row">
+                            <label class="btn-upload">📎 Upload photo / file
+                                <input type="file" accept="image/*" hidden onchange="handleUpload(this, 'imageUrl', updateGalleryImagePreview)">
+                            </label>
+                            <span class="upload-status" id="imageUrlUploadStatus"></span>
+                        </div>
+                        <div id="galleryImagePreviewWrap" style="display:none; margin-bottom:14px;">
+                            <img id="galleryImagePreview" alt="" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px;" onerror="this.parentElement.style.display='none';">
+                        </div>
                         <button class="btn-primary" onclick="addImage()">Add image</button>
                     </div>
                     <div id="galleryList"></div>
@@ -1048,6 +1086,48 @@
             }
         }
 
+        // ─── File / photo uploads ───
+        // Sends the selected file to the media function (Netlify Blobs), then
+        // writes the returned URL into the given text field. Shared by the
+        // Articles, Posts and Gallery forms.
+        async function handleUpload(input, targetFieldId, onDone) {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            const statusEl = document.getElementById(targetFieldId + 'UploadStatus');
+            const setStatus = (msg, cls) => {
+                if (!statusEl) return;
+                statusEl.textContent = msg;
+                statusEl.className = 'upload-status' + (cls ? ' ' + cls : '');
+            };
+            if (file.size > 25 * 1024 * 1024) {
+                setStatus('File is too large (max 25 MB).', 'error');
+                input.value = '';
+                return;
+            }
+            setStatus('Uploading ' + file.name + '…');
+            try {
+                const res = await fetch('/api/media', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': file.type || 'application/octet-stream',
+                        'x-file-name': encodeURIComponent(file.name),
+                        'x-admin-passcode': getStoredCreds().password
+                    },
+                    body: file
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || 'Upload failed');
+                const target = document.getElementById(targetFieldId);
+                if (target) target.value = data.url;
+                setStatus('✓ Uploaded', 'ok');
+                if (typeof onDone === 'function') onDone();
+            } catch (err) {
+                setStatus(err.message || 'Upload failed. Please try again.', 'error');
+            } finally {
+                input.value = '';
+            }
+        }
+
         // ─── Render ───
         function renderAll() {
             renderLiveStream();
@@ -1314,11 +1394,19 @@
         }
 
         // ─── Posts ───
+        function updatePostImagePreview() {
+            const url = document.getElementById('postImage').value.trim();
+            const wrap = document.getElementById('postImagePreviewWrap');
+            const img = document.getElementById('postImagePreview');
+            if (url) { img.src = url; wrap.style.display = 'block'; }
+            else { wrap.style.display = 'none'; }
+        }
         async function createPost() {
             const title = document.getElementById('postTitle').value.trim();
             const content = document.getElementById('postContent').value.trim();
+            const image = document.getElementById('postImage').value.trim();
             if (!title || !content) return showError('Please fill in the title and content.');
-            const post = { id: 'post_' + Date.now(), title, content, date: new Date().toISOString() };
+            const post = { id: 'post_' + Date.now(), title, content, image, date: new Date().toISOString() };
             state.posts.push(post);
             const btn = document.getElementById('publishPostBtn');
             btn.disabled = true; btn.textContent = 'Publishing…';
@@ -1327,6 +1415,8 @@
             if (ok) {
                 document.getElementById('postTitle').value = '';
                 document.getElementById('postContent').value = '';
+                document.getElementById('postImage').value = '';
+                updatePostImagePreview();
             } else {
                 state.posts = state.posts.filter(p => p.id !== post.id);
                 renderPosts();
@@ -1335,6 +1425,7 @@
         function renderPosts() {
             const html = state.posts.slice().reverse().map(p => `
                 <div class="card">
+                    ${p.image ? `<img src="${escapeHtml(p.image)}" style="width:100%; max-height:220px; object-fit:cover; border-radius:8px; margin-bottom:14px;" onerror="this.style.display='none';">` : ''}
                     <h3>${escapeHtml(p.title)}</h3>
                     <p style="color:var(--text-muted);">${escapeHtml(String(p.content || '').substring(0, 220))}${(p.content || '').length > 220 ? '…' : ''}</p>
                     <small style="color: var(--text-dim);">${formatDate(p.date)}</small>
@@ -1349,16 +1440,24 @@
         }
 
         // ─── Gallery ───
+        function updateGalleryImagePreview() {
+            const url = document.getElementById('imageUrl').value.trim();
+            const wrap = document.getElementById('galleryImagePreviewWrap');
+            const img = document.getElementById('galleryImagePreview');
+            if (url) { img.src = url; wrap.style.display = 'block'; }
+            else { wrap.style.display = 'none'; }
+        }
         async function addImage() {
             const url = document.getElementById('imageUrl').value.trim();
             const caption = document.getElementById('imageCaption').value.trim();
-            if (!url) return showError('Please enter an image URL.');
+            if (!url) return showError('Please enter an image URL or upload a file.');
             const img = { id: 'img_' + Date.now(), url, caption };
             state.gallery.push(img);
             const ok = await saveToCloud('Image added');
             if (ok) {
                 document.getElementById('imageUrl').value = '';
                 document.getElementById('imageCaption').value = '';
+                updateGalleryImagePreview();
             } else {
                 state.gallery = state.gallery.filter(i => i.id !== img.id);
                 renderGallery();

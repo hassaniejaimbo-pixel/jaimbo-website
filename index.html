@@ -2703,8 +2703,12 @@
       grid.innerHTML = arr.map((p, i) => {
         const date = formatDate(p.date);
         const shareUrl = pageUrl('#posts');
+        const thumb = p.image
+          ? '<img class="feed-card-image" src="' + escapeHtml(p.image) + '" alt="" onerror="this.style.display=\'none\'">'
+          : '';
         return (
           '<article class="feed-card fade-in" style="animation-delay:' + (i * 0.05) + 's;">' +
+            thumb +
             '<div class="feed-card-body">' +
               '<div class="feed-card-meta">Post</div>' +
               '<h3 class="feed-card-title">' + escapeHtml(p.title || 'Untitled') + '</h3>' +
