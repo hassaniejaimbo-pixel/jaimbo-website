@@ -1393,6 +1393,28 @@
       background: #0d1117;
       display: block;
     }
+    .feed-card-thumb-fallback {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--blue, #1877f2) 0%, var(--red, #e41e3f) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .feed-card-thumb-fallback::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.22), transparent 55%);
+    }
+    .feed-card-thumb-fallback span {
+      position: relative;
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: rgba(255,255,255,0.92);
+      letter-spacing: 1px;
+    }
     .feed-card-body {
       padding: 22px 22px 24px;
       flex: 1;
@@ -1744,6 +1766,85 @@
         scroll-behavior: auto !important;
       }
     }
+
+    /* ── Share buttons ── */
+    .share-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .share-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-right: 2px;
+    }
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+      padding: 0;
+    }
+    .share-btn svg { width: 16px; height: 16px; }
+    .share-btn:hover { transform: translateY(-2px); color: #fff; }
+    .share-btn.facebook:hover { background: #1877F2; border-color: #1877F2; }
+    .share-btn.twitter:hover  { background: #000; border-color: #000; }
+    .share-btn.whatsapp:hover { background: #25D366; border-color: #25D366; }
+    .share-btn.copy:hover     { background: var(--blue, #1877f2); border-color: var(--blue, #1877f2); }
+
+    /* ── Social links bar (footer) ── */
+    .footer-social {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 22px 0 6px;
+    }
+    .footer-social a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-muted);
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+    .footer-social a svg { width: 19px; height: 19px; }
+    .footer-social a:hover { transform: translateY(-3px); color: #fff; background: var(--blue, #1877f2); border-color: var(--blue, #1877f2); }
+
+    /* ── Toast (copy confirmation) ── */
+    .share-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 32px;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(20,20,22,0.96);
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.14);
+      font-size: 0.88rem;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      z-index: 9999;
+    }
+    .share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
@@ -2013,6 +2114,9 @@
       </div>
       <div class="feed-grid">
         <article class="feed-card fade-in">
+          <a href="raila-odinga.html" style="text-decoration:none;">
+            <div class="feed-card-thumb-fallback"><span>📰</span></div>
+          </a>
           <div class="feed-card-body">
             <div class="feed-card-meta">Obituary · Kenya</div>
             <h3 class="feed-card-title">They Could Not Break Him — Raila Odinga (1945–2025)</h3>
@@ -2021,6 +2125,7 @@
               <span>October 2025</span>
               <a href="raila-odinga.html" class="feed-card-link">Read more →</a>
             </div>
+            <div class="share-row" data-share-url="raila-odinga.html" data-share-title="They Could Not Break Him — Raila Odinga (1945–2025)"></div>
           </div>
         </article>
       </div>
@@ -2160,6 +2265,7 @@
     <div class="footer-inner">
       <div class="footer-brand">Jaim<span>bo</span></div>
       <p class="footer-tagline">"The only way to do great work is to love what you do."</p>
+      <div class="footer-social" id="footerSocial"></div>
       <div class="footer-links">
         <a href="#home">Home</a>
         <a href="#about">About</a>
@@ -2286,18 +2392,151 @@
       } catch (_) { return ''; }
     }
 
-    function renderLive(data) {
+    // ─── Sharing ───
+    const SHARE_ICONS = {
+      facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>',
+      twitter:  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
+      whatsapp: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 018.413 3.488 11.82 11.82 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.51 5.26l-.999 3.648 3.737-.98zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.247-.694.247-1.289.173-1.413z"/></svg>',
+      copy:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'
+    };
+
+    function pageUrl(hash) {
+      return location.origin + location.pathname + (hash || '');
+    }
+    function buildShareRow(url, title) {
+      const u = encodeURIComponent(url);
+      const t = encodeURIComponent(title || document.title);
+      return (
+        '<div class="share-row">' +
+          '<span class="share-label">Share</span>' +
+          '<button type="button" class="share-btn facebook" title="Share on Facebook" onclick="shareWindow(\'https://www.facebook.com/sharer/sharer.php?u=' + u + '\')">' + SHARE_ICONS.facebook + '</button>' +
+          '<button type="button" class="share-btn twitter" title="Share on X" onclick="shareWindow(\'https://twitter.com/intent/tweet?url=' + u + '&text=' + t + '\')">' + SHARE_ICONS.twitter + '</button>' +
+          '<button type="button" class="share-btn whatsapp" title="Share on WhatsApp" onclick="shareWindow(\'https://api.whatsapp.com/send?text=' + t + '%20' + u + '\')">' + SHARE_ICONS.whatsapp + '</button>' +
+          '<button type="button" class="share-btn copy" title="Copy link" onclick="copyShareLink(\'' + url.replace(/'/g, "\\'") + '\')">' + SHARE_ICONS.copy + '</button>' +
+        '</div>'
+      );
+    }
+    window.shareWindow = function(url) {
+      window.open(url, '_blank', 'noopener,noreferrer,width=600,height=540');
+    };
+    window.copyShareLink = async function(url) {
+      try { await navigator.clipboard.writeText(url); showToast('Link copied to clipboard'); }
+      catch (_) {
+        const ta = document.createElement('textarea');
+        ta.value = url; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); showToast('Link copied to clipboard'); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+    };
+    let _toastTimer = null;
+    function showToast(msg) {
+      let toast = document.getElementById('shareToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'shareToast'; toast.className = 'share-toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+    // Fill share rows that were hard-coded in the static HTML
+    function hydrateStaticShareRows() {
+      document.querySelectorAll('.share-row[data-share-url]').forEach(row => {
+        if (row.dataset.hydrated) return;
+        row.dataset.hydrated = '1';
+        const url = new URL(row.getAttribute('data-share-url'), pageUrl()).href;
+        row.outerHTML = buildShareRow(url, row.getAttribute('data-share-title') || '');
+      });
+    }
+
+    // ─── Social links (footer) ───
+    const SOCIAL_META = {
+      facebook:  { label: 'Facebook',  icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>' },
+      twitter:   { label: 'X',         icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>' },
+      instagram: { label: 'Instagram', icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163C8.741 0 8.332.014 7.052.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>' },
+      youtube:   { label: 'YouTube',   icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>' },
+      tiktok:    { label: 'TikTok',    icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>' },
+      linkedin:  { label: 'LinkedIn',  icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/></svg>' }
+    };
+    function renderSocialLinks(social) {
+      const wrap = document.getElementById('footerSocial');
+      if (!wrap) return;
+      social = social || {};
+      const order = ['facebook', 'twitter', 'instagram', 'youtube', 'tiktok', 'linkedin'];
+      const html = order.filter(k => social[k] && String(social[k]).trim())
+        .map(k => {
+          const meta = SOCIAL_META[k];
+          let href = String(social[k]).trim();
+          if (!/^https?:\/\//i.test(href) && !href.startsWith('mailto:')) href = 'https://' + href;
+          return '<a href="' + escapeHtml(href) + '" target="_blank" rel="noopener" aria-label="' + escapeHtml(meta.label) + '" title="' + escapeHtml(meta.label) + '">' + meta.icon + '</a>';
+        }).join('');
+      wrap.innerHTML = html;
+      wrap.style.display = html ? '' : 'none';
+    }
+
+    // Play an HLS (.m3u8) stream: native support (Safari) or hls.js (everything else)
+    function setupHlsPlayback(url) {
+      const video = document.getElementById('liveHlsVideo');
+      if (!video) return;
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+        return;
+      }
+      const attach = () => {
+        try {
+          if (window.Hls && window.Hls.isSupported()) {
+            const hls = new window.Hls();
+            hls.loadSource(url);
+            hls.attachMedia(video);
+          } else {
+            video.src = url; // last-resort attempt
+          }
+        } catch (_) { video.src = url; }
+      };
+      if (window.Hls) { attach(); return; }
+      // Lazy-load hls.js from CDN once
+      let script = document.getElementById('hlsJsLib');
+      if (!script) {
+        script = document.createElement('script');
+        script.id = 'hlsJsLib';
+        script.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js';
+        document.head.appendChild(script);
+      }
+      script.addEventListener('load', attach, { once: true });
+      script.addEventListener('error', () => { video.src = url; }, { once: true });
+    }
+
+    function renderLive(data, streaming) {
       const container = document.getElementById('liveContainer');
       if (!container) return;
 
-      // Stream is live and has a URL → embed it
-      if (data && data.url && data.status === 'live') {
+      // Determine the playback source: an explicit stream URL takes priority,
+      // otherwise fall back to the direct-streaming HLS playback link.
+      const playUrl = (data && data.url) ? data.url
+        : (streaming && streaming.hlsUrl ? streaming.hlsUrl : '');
+
+      // Stream is live and has a playable source → embed it
+      if (data && data.status === 'live' && playUrl) {
         const titleHtml = data.title
           ? '<span class="live-video-title">' + escapeHtml(data.title) + '</span>'
           : '';
         const header =
           '<div class="live-header"><span class="live-badge">Live Now</span>' + titleHtml + '</div>';
-        const embed = toEmbedUrl(data.url);
+
+        // Direct HLS playback (.m3u8) → native <video> + hls.js fallback
+        if (/\.m3u8(\?|$)/i.test(playUrl)) {
+          container.innerHTML = header +
+            '<div class="live-stage"><div class="live-frame">' +
+              '<video id="liveHlsVideo" controls autoplay playsinline ' +
+              'style="width:100%;height:100%;background:#000;"></video>' +
+            '</div></div>';
+          setupHlsPlayback(playUrl);
+          return;
+        }
+
+        const embed = toEmbedUrl(playUrl);
         if (embed) {
           container.innerHTML = header +
             '<div class="live-stage"><div class="live-frame">' +
@@ -2308,7 +2547,7 @@
           container.innerHTML = header +
             '<div class="live-stage"><div class="live-cta-wrap">' +
               '<p>Jaimbo is live now. Tap below to watch the stream.</p>' +
-              '<a href="' + escapeHtml(data.url) + '" target="_blank" rel="noopener" class="btn-primary">Watch Live →</a>' +
+              '<a href="' + escapeHtml(playUrl) + '" target="_blank" rel="noopener" class="btn-primary">Watch Live →</a>' +
             '</div></div>';
         }
         return;
@@ -2392,12 +2631,13 @@
         const res = await fetch(CLOUD_SYNC_URL + '?_=' + Date.now(), { cache: 'no-store' });
         if (!res.ok) throw new Error('cloud fetch failed');
         const data = await res.json();
-        renderLive(data.liveStream || null);
+        renderLive(data.liveStream || null, data.streaming || null);
         renderPrevStreams(data.previousStreams || []);
         renderArticles(data.articles || []);
         renderPosts(data.posts || []);
         renderGallery(data.gallery || []);
         renderMusic(data.music || []);
+        renderSocialLinks(data.social || {});
         applyContent(data);
         // Facebook section
         const fb = data.facebook || {};
@@ -2428,9 +2668,13 @@
       grid.innerHTML = arr.map((a, i) => {
         const date = formatDate(a.date);
         const excerpt = String(a.content || '').replace(/\s+/g, ' ').substring(0, 220);
+        const shareUrl = pageUrl('#article-' + a.id);
+        const thumb = a.image
+          ? '<img class="feed-card-image" src="' + escapeHtml(a.image) + '" alt="" onerror="this.outerHTML=\'<div class=&quot;feed-card-thumb-fallback&quot;><span>📰</span></div>\'">'
+          : '<div class="feed-card-thumb-fallback"><span>📰</span></div>';
         return (
           '<article class="feed-card fade-in" style="animation-delay:' + (i * 0.05) + 's;">' +
-            (a.image ? '<img class="feed-card-image" src="' + escapeHtml(a.image) + '" alt="" onerror="this.style.display=\'none\'">' : '') +
+            thumb +
             '<div class="feed-card-body">' +
               '<div class="feed-card-meta">Article</div>' +
               '<h3 class="feed-card-title">' + escapeHtml(a.title || 'Untitled') + '</h3>' +
@@ -2439,10 +2683,13 @@
                 '<span>' + escapeHtml(date) + '</span>' +
                 '<a href="#" class="feed-card-link" onclick="openArticleModal(\'' + a.id + '\'); return false;">Read more →</a>' +
               '</div>' +
+              buildShareRow(shareUrl, a.title || 'Article') +
             '</div>' +
           '</article>'
         );
       }).join('');
+      // Open a deep-linked article once the data is available
+      if (!_deepLinkHandled) openArticleFromHash();
     }
 
     function renderPosts(list) {
@@ -2455,6 +2702,7 @@
       }
       grid.innerHTML = arr.map((p, i) => {
         const date = formatDate(p.date);
+        const shareUrl = pageUrl('#posts');
         return (
           '<article class="feed-card fade-in" style="animation-delay:' + (i * 0.05) + 's;">' +
             '<div class="feed-card-body">' +
@@ -2462,6 +2710,7 @@
               '<h3 class="feed-card-title">' + escapeHtml(p.title || 'Untitled') + '</h3>' +
               '<p class="feed-card-excerpt">' + escapeHtml(String(p.content || '').substring(0, 280)) + '</p>' +
               '<div class="feed-card-footer"><span>' + escapeHtml(date) + '</span></div>' +
+              buildShareRow(shareUrl, p.title || 'Post') +
             '</div>' +
           '</article>'
         );
@@ -2519,6 +2768,16 @@
       // Optional site title
       const t = (data.settings && data.settings.siteTitle) || '';
       if (t && document.title.indexOf(t) === -1) document.title = t;
+      // Optional profile picture & cover photo
+      const ap = data.appearance || {};
+      if (ap.profilePic) {
+        const pImg = document.querySelector('.hero-profile-ring img');
+        if (pImg) pImg.src = ap.profilePic;
+      }
+      if (ap.coverPhoto) {
+        const cover = document.querySelector('.hero-cover');
+        if (cover) cover.style.backgroundImage = "url('" + ap.coverPhoto.replace(/'/g, "%27") + "')";
+      }
     }
 
     // ── Article modal ──
@@ -2541,16 +2800,34 @@
             '<h2>' + escapeHtml(a.title || 'Untitled') + '</h2>' +
             '<div class="meta">' + escapeHtml(formatDate(a.date)) + '</div>' +
             '<p>' + escapeHtml(a.content || '') + '</p>' +
+            buildShareRow(pageUrl('#article-' + a.id), a.title || 'Article') +
           '</div>' +
         '</div>';
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
+      if (location.hash !== '#article-' + a.id) {
+        history.replaceState(null, '', '#article-' + a.id);
+      }
     };
     window.closeArticleModal = function() {
       const modal = document.getElementById('articleModal');
       if (modal) modal.classList.remove('active');
       document.body.style.overflow = '';
+      if (/^#article-/.test(location.hash)) {
+        history.replaceState(null, '', location.pathname + location.search);
+      }
     };
+    // Open an article automatically when the page is loaded with an #article-<id> link
+    let _deepLinkHandled = false;
+    function openArticleFromHash() {
+      const m = /^#article-(.+)$/.exec(location.hash);
+      if (!m) return;
+      const id = m[1];
+      if (_allArticlesCache.find(x => x.id === id)) {
+        _deepLinkHandled = true;
+        window.openArticleModal(id);
+      }
+    }
 
     // ── Lightbox ──
     function ensureLightbox() {
@@ -2655,6 +2932,7 @@
     armFadeIns();
 
     // Initial load
+    hydrateStaticShareRows();
     loadCloudData();
     // Auto-refresh every 30s so visitors see new content without reloading
     setInterval(loadCloudData, 30000);

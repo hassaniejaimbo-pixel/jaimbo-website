@@ -108,6 +108,12 @@ p strong { color: var(--text-bright); font-weight: 600; }
 .closer strong { font-style: normal; font-weight: 700; color: var(--cream); }
 .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 52px; }
 .tag { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; border: 1px solid var(--border); color: var(--muted); border-radius: 2px; }
+.share-block { margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--border); }
+.share-heading { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; font-weight: 600; }
+.share-buttons { display: flex; flex-wrap: wrap; gap: 12px; }
+.share-link { display: inline-flex; align-items: center; gap: 9px; padding: 11px 18px; border: 1px solid var(--border); border-radius: 3px; background: var(--bg2); color: var(--text-bright); font-family: inherit; font-size: 13px; letter-spacing: 0.04em; text-decoration: none; cursor: pointer; transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease, transform 0.2s ease; }
+.share-link svg { width: 17px; height: 17px; }
+.share-link:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
 
 footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 40px; text-align: center; font-size: 12px; letter-spacing: 0.08em; color: var(--muted); }
 footer strong { color: var(--gold); }
@@ -229,7 +235,59 @@ footer strong { color: var(--gold); }
     <span class="tag">1945–2025</span>
   </div>
 
+  <div class="share-block">
+    <p class="share-heading">Share this story</p>
+    <div class="share-buttons">
+      <a id="shareFacebook" class="share-link" target="_blank" rel="noopener" aria-label="Share on Facebook">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        <span>Facebook</span>
+      </a>
+      <a id="shareTwitter" class="share-link" target="_blank" rel="noopener" aria-label="Share on X">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        <span>X</span>
+      </a>
+      <a id="shareWhatsapp" class="share-link" target="_blank" rel="noopener" aria-label="Share on WhatsApp">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.82 11.82 0 018.413 3.488 11.82 11.82 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.51 5.26l-.999 3.648 3.737-.98zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.247-.694.247-1.289.173-1.413z"/></svg>
+        <span>WhatsApp</span>
+      </a>
+      <button type="button" id="shareCopy" class="share-link" aria-label="Copy link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <span id="shareCopyLabel">Copy link</span>
+      </button>
+    </div>
+  </div>
+
 </main>
+
+<script>
+  (function () {
+    var url = location.href;
+    var title = document.title;
+    var u = encodeURIComponent(url);
+    var t = encodeURIComponent(title);
+    var fb = document.getElementById('shareFacebook');
+    var tw = document.getElementById('shareTwitter');
+    var wa = document.getElementById('shareWhatsapp');
+    if (fb) fb.href = 'https://www.facebook.com/sharer/sharer.php?u=' + u;
+    if (tw) tw.href = 'https://twitter.com/intent/tweet?url=' + u + '&text=' + t;
+    if (wa) wa.href = 'https://api.whatsapp.com/send?text=' + t + '%20' + u;
+    var copy = document.getElementById('shareCopy');
+    if (copy) {
+      copy.addEventListener('click', function () {
+        var label = document.getElementById('shareCopyLabel');
+        var done = function () { if (label) { label.textContent = 'Copied!'; setTimeout(function () { label.textContent = 'Copy link'; }, 2200); } };
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(done).catch(done);
+        } else {
+          var ta = document.createElement('textarea');
+          ta.value = url; document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); } catch (e) {}
+          document.body.removeChild(ta); done();
+        }
+      });
+    }
+  })();
+</script>
 
 <footer>
   <p>Raila Amolo Odinga &nbsp;·&nbsp; <strong>1945 – 2025</strong> &nbsp;·&nbsp; Baba wa Taifa</p>
