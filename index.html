@@ -2189,7 +2189,10 @@
 
     // ─── Live Video & Cloud Sync ───
     const FB_PROFILE = 'https://www.facebook.com/profile.php?id=61578836424894';
-    const CLOUD_SYNC_URL = 'https://api.jsonblob.com/019e7981-efa3-7fa6-a5b8-4ae7ab4bf7b0';
+    // Content and visit tracking are served by this site's own Netlify Functions
+    // (backed by Netlify Blobs), the same source the admin portal writes to.
+    const CONTENT_API = '/api/content';
+    const VISITS_API = '/api/visits';
 
     // Turn a watch/share link into an embeddable player URL.
     function toEmbedUrl(raw) {
@@ -2361,7 +2364,7 @@
 
     async function loadCloudData() {
       try {
-        const res = await fetch(CLOUD_SYNC_URL + '?_=' + Date.now(), { cache: 'no-store' });
+        const res = await fetch(CONTENT_API + '?_=' + Date.now(), { cache: 'no-store' });
         if (!res.ok) throw new Error('cloud fetch failed');
         const data = await res.json();
         renderLive(data.liveStream || null);
@@ -2628,6 +2631,8 @@
 
     // Initial load
     loadCloudData();
+    // Count this page view once (best-effort; failures are silent)
+    fetch(VISITS_API, { method: 'POST', cache: 'no-store' }).catch(() => {});
     // Auto-refresh every 30s so visitors see new content without reloading
     setInterval(loadCloudData, 30000);
     // Also re-fetch when the page becomes visible again
@@ -2658,18 +2663,14 @@
       status.textContent = '';
 
       try {
-        // Read current cloud state, append this message, write back
-        const cur = await fetch(CLOUD_SYNC_URL + '?_=' + Date.now(), { cache: 'no-store' }).then(r => r.json());
-        const next = Object.assign({}, cur, {
-          messages: Array.isArray(cur.messages) ? cur.messages.concat([payload]) : [payload],
-          lastUpdated: new Date().toISOString()
-        });
-        const put = await fetch(CLOUD_SYNC_URL, {
-          method: 'PUT',
+        // The server appends this single message under strong consistency, so
+        // concurrent admin edits to the rest of the site can never clobber it.
+        const res = await fetch(CONTENT_API + '/message', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(next)
+          body: JSON.stringify(payload)
         });
-        if (!put.ok) throw new Error('Could not send message. Please try again.');
+        if (!res.ok) throw new Error('Could not send message. Please try again.');
 
         btn.innerHTML = '✓ Message Sent!';
         btn.style.background = '#34C759';
