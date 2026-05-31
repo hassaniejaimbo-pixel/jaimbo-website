@@ -894,7 +894,9 @@
 
         // Submissions
         function loadSubmissions() {
-            fetch('/api/submissions')
+            fetch('/api/submissions', {
+                headers: { 'x-admin-passcode': ADMIN_PASSWORD }
+            })
                 .then(r => r.json())
                 .then(data => {
                     const subs = data.submissions || [];
