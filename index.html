@@ -5,8 +5,8 @@
     // ── Resilience guard ──────────────────────────────────────────────
     // Keeps the page from registering uncaught runtime errors that come
     // from third-party code we don't control: the AdSense script, embedded
-    // video iframes, and the periodic external feed fetches (jsonblob /
-    // rss2json). Cross-origin script failures arrive as an opaque
+    // video iframes, and the periodic external feed fetches (rss2json).
+    // Cross-origin script failures arrive as an opaque
     // "Script error." with no usable source — those are suppressed so they
     // stop inflating the real-user error rate. Genuine first-party errors
     // (with a real filename on this origin) are left untouched so they
@@ -2323,7 +2323,7 @@
 
     // ─── Live Video & Cloud Sync ───
     const FB_PROFILE = 'https://www.facebook.com/profile.php?id=61578836424894';
-    const CLOUD_SYNC_URL = 'https://api.jsonblob.com/019e7981-efa3-7fa6-a5b8-4ae7ab4bf7b0';
+    const CLOUD_SYNC_URL = '/api/sync';
 
     // Turn a watch/share link into an embeddable player URL.
     function toEmbedUrl(raw) {
