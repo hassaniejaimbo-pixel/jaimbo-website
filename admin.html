@@ -399,6 +399,7 @@
                 <button class="menu-item" onclick="switchSection('facebook', this)">📘 Facebook Feed</button>
                 <button class="menu-item" onclick="switchSection('submissions', this)">💬 Messages <span id="msgBadge" style="background:var(--blue);color:white;font-size:10px;padding:2px 7px;border-radius:10px;margin-left:auto;display:none;">0</span></button>
                 <button class="menu-item" onclick="switchSection('settings', this)">⚙️ Settings</button>
+                <button class="menu-item" onclick="switchSection('mediaupload', this)">📤 Upload Files</button>
             </div>
 
             <div class="content">
@@ -480,7 +481,11 @@
                     <div class="card">
                         <h3>Create new article</h3>
                         <input type="text" class="form-input" id="articleTitle" placeholder="Article title">
-                        <input type="text" class="form-input" id="articleImage" placeholder="Cover image URL (optional)">
+                        <div style="display:flex; gap:8px; align-items:center; margin-bottom:14px;">
+                            <input type="text" class="form-input" id="articleImage" placeholder="Cover image URL (optional)" style="margin-bottom:0; flex:1;">
+                            <button class="btn-secondary" onclick="document.getElementById('articleImageUpload').click()" style="flex-shrink:0; padding:10px 14px; font-size:12px;">📷 Upload</button>
+                            <input type="file" id="articleImageUpload" accept="image/*" style="display:none;" onchange="handleArticleImageUpload(this.files[0])">
+                        </div>
                         <textarea class="form-textarea" id="articleContent" placeholder="Article body…" style="min-height: 220px;"></textarea>
                         <button class="btn-primary" onclick="createArticle()" id="publishArticleBtn">Publish article</button>
                     </div>
@@ -505,10 +510,22 @@
                     <h2>Gallery</h2>
                     <p class="section-desc">Images shown in your photo gallery (with lightbox on the website).</p>
                     <div class="card">
-                        <h3>Add image</h3>
+                        <h3>Add image via URL</h3>
                         <input type="text" class="form-input" id="imageUrl" placeholder="Image URL (https://…)">
                         <input type="text" class="form-input" id="imageCaption" placeholder="Caption (optional)">
                         <button class="btn-primary" onclick="addImage()">Add image</button>
+                    </div>
+                    <div class="card">
+                        <h3>Upload image from device</h3>
+                        <p class="card-desc">Upload directly from your computer. Requires Cloudinary configured in <strong>Settings → File Uploads</strong>.</p>
+                        <div style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:28px; text-align:center; cursor:pointer; transition:border-color 0.2s;" onclick="document.getElementById('galleryDirectUpload').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleGalleryDirectDrop(event)">
+                            <div style="font-size:32px; margin-bottom:8px;">🖼️</div>
+                            <p style="color:var(--text-muted); font-size:14px;">Click or drag &amp; drop an image</p>
+                        </div>
+                        <input type="file" id="galleryDirectUpload" style="display:none;" accept="image/*" onchange="handleGalleryDirectUpload(this.files[0])">
+                        <input type="text" class="form-input" id="galleryDirectCaption" placeholder="Caption (optional)" style="margin-top:12px;">
+                        <div id="galleryDirectPreview" style="margin-top:8px;"></div>
+                        <button class="btn-primary" id="galleryDirectBtn" onclick="submitGalleryDirectUpload()" disabled style="margin-top:10px;">Upload &amp; add to gallery</button>
                     </div>
                     <div id="galleryList"></div>
                 </section>
@@ -518,7 +535,7 @@
                     <h2>Music</h2>
                     <p class="section-desc">Audio tracks displayed with cover art and a built-in player on the website.</p>
                     <div class="card">
-                        <h3>Add a track</h3>
+                        <h3>Add a track via URL</h3>
                         <label class="input-label">Track title</label>
                         <input type="text" class="form-input" id="musicTitle" placeholder="Track title">
                         <label class="input-label">Artist (optional)</label>
@@ -528,6 +545,19 @@
                         <label class="input-label">Cover image URL (optional)</label>
                         <input type="text" class="form-input" id="musicCover" placeholder="https://…">
                         <button class="btn-primary" onclick="addMusic()">Add track</button>
+                    </div>
+                    <div class="card">
+                        <h3>Upload audio from device</h3>
+                        <p class="card-desc">Upload an audio file directly. Requires Cloudinary configured in <strong>Settings → File Uploads</strong>.</p>
+                        <div style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:24px; text-align:center; cursor:pointer; transition:border-color 0.2s;" onclick="document.getElementById('musicDirectUpload').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleMusicDirectDrop(event)">
+                            <div style="font-size:32px; margin-bottom:8px;">🎵</div>
+                            <p style="color:var(--text-muted); font-size:14px;">Click or drag &amp; drop an audio file (MP3, M4A, OGG, WAV)</p>
+                        </div>
+                        <input type="file" id="musicDirectUpload" style="display:none;" accept="audio/*" onchange="handleMusicDirectUpload(this.files[0])">
+                        <div id="musicDirectPreview" style="margin-top:10px;"></div>
+                        <input type="text" class="form-input" id="musicDirectTitle" placeholder="Track title" style="margin-top:12px;">
+                        <input type="text" class="form-input" id="musicDirectArtist" placeholder="Artist (optional)">
+                        <button class="btn-primary" id="musicDirectBtn" onclick="submitMusicDirectUpload()" disabled>Upload &amp; add track</button>
                     </div>
                     <div id="musicList"></div>
                 </section>
@@ -619,6 +649,65 @@
                     </table>
                 </section>
 
+                <!-- Media Upload -->
+                <section id="mediaupload" class="section">
+                    <h2>Upload Files</h2>
+                    <p class="section-desc">Upload photos, audio, video, and documents. Files are hosted on Cloudinary (free). Configure your Cloudinary credentials in <strong>Settings → File Uploads</strong> first.</p>
+
+                    <div class="card">
+                        <h3>📁 Quick Upload</h3>
+                        <p class="card-desc">Upload any file and get a URL to use anywhere on your site.</p>
+                        <div style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:36px; text-align:center; cursor:pointer; transition:border-color 0.2s;" onclick="document.getElementById('quickUploadInput2').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleQuickUploadDrop2(event)">
+                            <div style="font-size:42px; margin-bottom:10px;">📁</div>
+                            <p style="color:var(--text-muted); font-size:15px; font-weight:600;">Click or drag &amp; drop to upload</p>
+                            <p style="color:var(--text-dim); font-size:12px; margin-top:6px;">Images, audio, video, PDF, Word docs, and more</p>
+                        </div>
+                        <input type="file" id="quickUploadInput2" style="display:none;" accept="image/*,audio/*,video/*,.pdf,.doc,.docx" onchange="handleQuickUpload2(this.files[0])">
+                        <div id="uploadProgress2" style="display:none; margin-top:14px;">
+                            <div style="background:var(--panel-2); border-radius:6px; overflow:hidden; height:10px;">
+                                <div id="uploadProgressBar2" style="height:100%; background:var(--blue); width:0%; transition:width 0.3s;"></div>
+                            </div>
+                            <p id="uploadProgressText2" style="color:var(--text-muted); font-size:13px; margin-top:8px;">Uploading…</p>
+                        </div>
+                        <div id="uploadResult2" style="display:none; margin-top:14px; padding:14px; background:var(--panel-2); border-radius:8px; border:1px solid var(--border-soft);">
+                            <p style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">Uploaded URL:</p>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <input type="text" class="form-input" id="uploadedUrl2" readonly style="margin-bottom:0; flex:1;">
+                                <button class="btn-secondary" onclick="copyUploadedUrl2()" style="flex-shrink:0; padding:10px 14px;">Copy</button>
+                            </div>
+                            <div id="uploadPreviewContainer2" style="margin-top:12px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="card" style="margin-bottom:0;">
+                            <h3>🖼️ Upload to Gallery</h3>
+                            <p class="card-desc">Upload an image directly to your gallery section.</p>
+                            <div style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:24px; text-align:center; cursor:pointer; transition:border-color 0.2s;" onclick="document.getElementById('galleryUploadInput2').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleGalleryUploadDrop2(event)">
+                                <div style="font-size:28px; margin-bottom:6px;">🖼️</div>
+                                <p style="color:var(--text-muted); font-size:13px;">Click or drag &amp; drop</p>
+                            </div>
+                            <input type="file" id="galleryUploadInput2" style="display:none;" accept="image/*" onchange="previewGalleryUpload2(this.files[0])">
+                            <input type="text" class="form-input" id="galleryUploadCaption2" placeholder="Caption (optional)" style="margin-top:12px;">
+                            <div id="galleryUploadPreview2" style="margin-top:8px;"></div>
+                            <button class="btn-primary" id="galleryUploadBtn2" onclick="uploadToGallery2()" disabled style="margin-top:10px;">Add to Gallery</button>
+                        </div>
+                        <div class="card" style="margin-bottom:0;">
+                            <h3>🎵 Upload Audio Track</h3>
+                            <p class="card-desc">Upload an audio file directly to your music section.</p>
+                            <div style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:24px; text-align:center; cursor:pointer; transition:border-color 0.2s;" onclick="document.getElementById('musicUploadInput2').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleMusicUploadDrop2(event)">
+                                <div style="font-size:28px; margin-bottom:6px;">🎵</div>
+                                <p style="color:var(--text-muted); font-size:13px;">MP3, M4A, OGG, WAV</p>
+                            </div>
+                            <input type="file" id="musicUploadInput2" style="display:none;" accept="audio/*" onchange="previewMusicUpload2(this.files[0])">
+                            <div id="musicUploadPreview2" style="margin-top:10px;"></div>
+                            <input type="text" class="form-input" id="musicUploadTitle2" placeholder="Track title" style="margin-top:12px;">
+                            <input type="text" class="form-input" id="musicUploadArtist2" placeholder="Artist (optional)">
+                            <button class="btn-primary" id="musicUploadBtn2" onclick="uploadMusic2()" disabled>Add to Music</button>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Settings -->
                 <section id="settings" class="section">
                     <h2>Settings</h2>
@@ -633,6 +722,10 @@
                         <button class="settings-tab" onclick="switchSettingsTab('seo', this)">SEO &amp; footer</button>
                         <button class="settings-tab" onclick="switchSettingsTab('security', this)">Security</button>
                         <button class="settings-tab" onclick="switchSettingsTab('sync', this)">Cloud sync</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('appearance', this)">Appearance</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('notifications', this)">Notifications</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('uploads', this)">File Uploads</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('maintenance', this)">Maintenance</button>
                     </div>
 
                     <div id="settings-identity" class="settings-panel active">
@@ -758,11 +851,154 @@
                     <div id="settings-sync" class="settings-panel">
                         <div class="card">
                             <h3>Cloud sync</h3>
-                            <p class="card-desc">Your live stream, archive, content, and messages sync via this endpoint.</p>
-                            <label class="input-label">Endpoint</label>
+                            <p class="card-desc">Your live stream, archive, content, and messages sync to jaimbo.live via this endpoint.</p>
+                            <label class="input-label">Sync endpoint (jaimbo.live)</label>
                             <input type="text" class="form-input" id="endpointDisplay" readonly>
                             <p style="color: var(--text-dim); font-size: 12px;">Last synced: <span id="lastSyncedDisplay">—</span></p>
-                            <button class="btn-secondary" onclick="loadFromCloud(true)">Re-sync now</button>
+                            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+                                <button class="btn-secondary" onclick="loadFromCloud(true)">↻ Re-sync now</button>
+                                <button class="btn-primary" onclick="forceSyncNow()">⬆ Push to jaimbo.live</button>
+                            </div>
+                            <div style="margin-top:16px; padding:12px; background:var(--panel-2); border-radius:8px; border:1px solid var(--border-soft);">
+                                <p style="font-size:12px; color:var(--text-muted);">🔗 Your site syncs automatically every 30 seconds. Changes are live on <a href="https://jaimbo.live" target="_blank" style="color:var(--blue);">jaimbo.live</a> within 30s of saving.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appearance Settings -->
+                    <div id="settings-appearance" class="settings-panel">
+                        <div class="card">
+                            <h3>Appearance</h3>
+                            <p class="card-desc">Customize how your admin dashboard looks.</p>
+                            <label class="input-label">Font family</label>
+                            <select class="form-select" id="appearanceFont">
+                                <option value="system">System default</option>
+                                <option value="inter">Inter</option>
+                                <option value="roboto">Roboto</option>
+                                <option value="mono">Monospace</option>
+                            </select>
+                            <label class="input-label" style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                                <input type="checkbox" id="appearanceAnimations" style="width:auto; margin-bottom:0;">
+                                <span style="text-transform:none; letter-spacing:normal;">Enable UI animations</span>
+                            </label>
+                            <label class="input-label" style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                                <input type="checkbox" id="appearanceDarkMode" style="width:auto; margin-bottom:0;" checked>
+                                <span style="text-transform:none; letter-spacing:normal;">Dark mode (recommended)</span>
+                            </label>
+                            <button class="btn-primary" onclick="saveAppearance()">Save appearance</button>
+                        </div>
+                    </div>
+
+                    <!-- Notifications Settings -->
+                    <div id="settings-notifications" class="settings-panel">
+                        <div class="card">
+                            <h3>Notifications</h3>
+                            <p class="card-desc">Get notified when visitors send messages or interact with your site.</p>
+                            <label class="input-label" style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                                <input type="checkbox" id="notifEmailEnabled" style="width:auto; margin-bottom:0;">
+                                <span style="text-transform:none; letter-spacing:normal;">Email me when a new message arrives</span>
+                            </label>
+                            <label class="input-label">Notification email address</label>
+                            <input type="email" class="form-input" id="notifEmailAddress" placeholder="you@example.com">
+                            <label class="input-label" style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                                <input type="checkbox" id="notifBrowser" style="width:auto; margin-bottom:0;">
+                                <span style="text-transform:none; letter-spacing:normal;">Browser push notifications (requires permission)</span>
+                            </label>
+                            <button class="btn-primary" onclick="saveNotifications()">Save notification settings</button>
+                            <button class="btn-secondary" onclick="testNotification()" style="margin-top:8px;">Send test notification</button>
+                        </div>
+                    </div>
+
+                    <!-- File Uploads Settings -->
+                    <div id="settings-uploads" class="settings-panel">
+                        <div class="card">
+                            <h3>Photo &amp; File Upload</h3>
+                            <p class="card-desc">Upload photos, audio, videos and documents directly from this admin panel using Cloudinary (free). <a href="https://cloudinary.com/users/register/free" target="_blank" style="color:var(--blue);">Create a free account →</a></p>
+                            <label class="input-label">Cloudinary Cloud Name</label>
+                            <input type="text" class="form-input" id="uploadCloudName" placeholder="your-cloud-name">
+                            <label class="input-label">Upload Preset (unsigned)</label>
+                            <input type="text" class="form-input" id="uploadPreset" placeholder="ml_default">
+                            <p style="color:var(--text-dim); font-size:12px; margin-top:-10px; margin-bottom:14px;">In Cloudinary → Settings → Upload → Add upload preset → Set to "Unsigned"</p>
+                            <label class="input-label">Max file size (MB)</label>
+                            <input type="number" class="form-input" id="uploadMaxSize" min="1" max="100" value="10">
+                            <label class="input-label">Allowed file types</label>
+                            <input type="text" class="form-input" id="uploadAllowedTypes" placeholder="image/*,audio/*,video/*,.pdf,.doc,.docx">
+                            <button class="btn-primary" onclick="saveUploads()">Save upload settings</button>
+                        </div>
+                        <div class="card">
+                            <h3>Quick Upload</h3>
+                            <p class="card-desc">Upload a file now and copy the URL to use anywhere on your site.</p>
+                            <div id="quickUploadArea" style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:32px; text-align:center; cursor:pointer; transition:border-color 0.2s;" onclick="document.getElementById('quickUploadInput').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleQuickUploadDrop(event)">
+                                <div style="font-size:36px; margin-bottom:8px;">📁</div>
+                                <p style="color:var(--text-muted); font-size:14px;">Click or drag &amp; drop to upload</p>
+                                <p style="color:var(--text-dim); font-size:12px; margin-top:4px;">Images, audio, video, PDF, Word docs</p>
+                            </div>
+                            <input type="file" id="quickUploadInput" style="display:none;" accept="image/*,audio/*,video/*,.pdf,.doc,.docx" onchange="handleQuickUpload(this.files[0])">
+                            <div id="uploadProgress" style="display:none; margin-top:12px;">
+                                <div style="background:var(--panel-2); border-radius:6px; overflow:hidden; height:8px;">
+                                    <div id="uploadProgressBar" style="height:100%; background:var(--blue); width:0%; transition:width 0.3s;"></div>
+                                </div>
+                                <p id="uploadProgressText" style="color:var(--text-muted); font-size:12px; margin-top:6px;">Uploading…</p>
+                            </div>
+                            <div id="uploadResult" style="display:none; margin-top:12px; padding:12px; background:var(--panel-2); border-radius:8px; border:1px solid var(--border-soft);">
+                                <p style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">Uploaded URL:</p>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <input type="text" class="form-input" id="uploadedUrl" readonly style="margin-bottom:0; flex:1; font-size:12px;">
+                                    <button class="btn-secondary" onclick="copyUploadedUrl()" style="flex-shrink:0; padding:10px 14px;">Copy</button>
+                                </div>
+                                <div id="uploadPreviewContainer" style="margin-top:10px;"></div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Upload to Gallery</h3>
+                            <p class="card-desc">Upload an image directly to your gallery.</p>
+                            <div id="galleryUploadArea" style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:24px; text-align:center; cursor:pointer; transition:border-color 0.2s;" onclick="document.getElementById('galleryUploadInput').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleGalleryUploadDrop(event)">
+                                <div style="font-size:28px; margin-bottom:6px;">🖼️</div>
+                                <p style="color:var(--text-muted); font-size:13px;">Click or drag &amp; drop an image</p>
+                            </div>
+                            <input type="file" id="galleryUploadInput" style="display:none;" accept="image/*" onchange="previewGalleryUpload(this.files[0])">
+                            <input type="text" class="form-input" id="galleryUploadCaption" placeholder="Caption (optional)" style="margin-top:12px;">
+                            <button class="btn-primary" id="galleryUploadBtn" onclick="uploadToGallery()" disabled>Upload to Gallery</button>
+                            <div id="galleryUploadPreview" style="margin-top:10px;"></div>
+                        </div>
+                        <div class="card">
+                            <h3>Upload Music Cover</h3>
+                            <p class="card-desc">Upload a cover image for a music track.</p>
+                            <div id="musicCoverUploadArea" style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:24px; text-align:center; cursor:pointer; transition:border-color 0.2s;" onclick="document.getElementById('musicCoverUploadInput').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleMusicCoverDrop(event)">
+                                <div style="font-size:28px; margin-bottom:6px;">🎵</div>
+                                <p style="color:var(--text-muted); font-size:13px;">Click or drag &amp; drop a cover image</p>
+                            </div>
+                            <input type="file" id="musicCoverUploadInput" style="display:none;" accept="image/*" onchange="previewMusicCoverUpload(this.files[0])">
+                            <div id="musicCoverUploadPreview" style="margin-top:10px;"></div>
+                            <p style="color:var(--text-dim); font-size:12px; margin-top:6px;">After uploading, the URL will be auto-filled in the Music section's cover image field.</p>
+                        </div>
+                    </div>
+
+                    <!-- Maintenance Settings -->
+                    <div id="settings-maintenance" class="settings-panel">
+                        <div class="card">
+                            <h3>Maintenance mode</h3>
+                            <p class="card-desc">Temporarily show a maintenance page to visitors while you make updates.</p>
+                            <label class="input-label" style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+                                <input type="checkbox" id="maintenanceEnabled" style="width:auto; margin-bottom:0;">
+                                <span style="text-transform:none; letter-spacing:normal; color:#ff8a9e;">Enable maintenance mode (visitors will see the message below)</span>
+                            </label>
+                            <label class="input-label">Maintenance message</label>
+                            <textarea class="form-textarea" id="maintenanceMessage" placeholder="Site is under maintenance. Back soon!"></textarea>
+                            <button class="btn-primary" onclick="saveMaintenance()">Save maintenance settings</button>
+                        </div>
+                        <div class="card">
+                            <h3>Data backup</h3>
+                            <p class="card-desc">Download a full backup of all your site data as a JSON file.</p>
+                            <button class="btn-primary" onclick="downloadBackup()">⬇ Download backup (JSON)</button>
+                            <button class="btn-secondary" onclick="document.getElementById('restoreInput').click()" style="margin-top:8px;">⬆ Restore from backup</button>
+                            <input type="file" id="restoreInput" accept=".json" style="display:none;" onchange="restoreFromBackup(this)">
+                            <p id="lastBackupText" style="color:var(--text-dim); font-size:12px; margin-top:10px;">No backup downloaded yet.</p>
+                        </div>
+                        <div class="card">
+                            <h3>Danger zone</h3>
+                            <p class="card-desc" style="color:#ff8a9e;">These actions are irreversible. Proceed with caution.</p>
+                            <button class="btn-danger" onclick="clearAllData()" style="padding:11px 22px; font-size:13px;">🗑 Clear all site data</button>
                         </div>
                     </div>
                 </section>
@@ -794,7 +1030,7 @@
 
     <script>
         // ─── Configuration ───
-        const CLOUD_SYNC_URL = 'https://api.jsonblob.com/019e7981-efa3-7fa6-a5b8-4ae7ab4bf7b0';
+        const CLOUD_SYNC_URL = 'https://api.jsonblob.com/api/jsonBlob/019e8486-ca6a-75ff-aef4-cabefa27ecf6';
         const DEFAULT_EMAIL = 'hassaniejaimbo@gmail.com';
         const DEFAULT_PASSWORD = 'admin123';
 
@@ -821,6 +1057,10 @@
             footer: { text: '' },
             settings: { siteTitle: 'Jaimbo', siteDesc: '', logoUrl: '', favicon: '' },
             facebook: { rssUrl: '', sectionTitle: 'From Facebook', maxPosts: 6, enabled: false },
+            appearance: { darkMode: true, fontFamily: 'system', animationsEnabled: true, sidebarCollapsed: false },
+            notifications: { emailOnMessage: false, emailAddress: '', browserNotifications: false },
+            uploads: { cloudName: '', uploadPreset: '', maxFileSizeMb: 10, allowedTypes: 'image/*,audio/*,video/*,.pdf,.doc,.docx' },
+            maintenance: { maintenanceMode: false, maintenanceMessage: 'Site is under maintenance. Back soon!', backupEnabled: false, lastBackup: null },
             lastUpdated: null
         };
         let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -940,7 +1180,7 @@
                 ['previousStreams','articles','posts','gallery','music','messages','facebookPosts'].forEach(k => {
                     if (!Array.isArray(state[k])) state[k] = [];
                 });
-                ['content','hero','brand','social','contact','seo','footer','settings','facebook'].forEach(k => {
+                ['content','hero','brand','social','contact','seo','footer','settings','facebook','appearance','notifications','uploads','maintenance'].forEach(k => {
                     if (!state[k] || typeof state[k] !== 'object') state[k] = JSON.parse(JSON.stringify(DEFAULT_STATE[k]));
                     else state[k] = Object.assign({}, DEFAULT_STATE[k], state[k]);
                 });
@@ -1024,6 +1264,10 @@
             renderFacebook();
             renderOverview();
             renderSecurity();
+            renderAppearance();
+            renderNotifications();
+            renderUploads();
+            renderMaintenance();
         }
 
         function renderOverview() {
@@ -1556,6 +1800,510 @@
                 showError('Feed test failed: ' + err.message);
             } finally {
                 btn.disabled = false; btn.textContent = 'Test feed now';
+            }
+        }
+
+        // ─── Force sync ───
+        async function forceSyncNow() {
+            await saveToCloud('Pushed to jaimbo.live successfully!');
+        }
+
+        // ─── Appearance ───
+        function renderAppearance() {
+            const a = state.appearance || {};
+            const fontEl = document.getElementById('appearanceFont');
+            if (fontEl) fontEl.value = a.fontFamily || 'system';
+            const animEl = document.getElementById('appearanceAnimations');
+            if (animEl) animEl.checked = a.animationsEnabled !== false;
+            const darkEl = document.getElementById('appearanceDarkMode');
+            if (darkEl) darkEl.checked = a.darkMode !== false;
+        }
+        async function saveAppearance() {
+            state.appearance = {
+                fontFamily: document.getElementById('appearanceFont').value,
+                animationsEnabled: document.getElementById('appearanceAnimations').checked,
+                darkMode: document.getElementById('appearanceDarkMode').checked,
+                sidebarCollapsed: state.appearance.sidebarCollapsed || false
+            };
+            await saveToCloud('Appearance settings saved');
+        }
+
+        // ─── Notifications ───
+        function renderNotifications() {
+            const n = state.notifications || {};
+            const emailEl = document.getElementById('notifEmailEnabled');
+            if (emailEl) emailEl.checked = !!n.emailOnMessage;
+            const addrEl = document.getElementById('notifEmailAddress');
+            if (addrEl) addrEl.value = n.emailAddress || '';
+            const browserEl = document.getElementById('notifBrowser');
+            if (browserEl) browserEl.checked = !!n.browserNotifications;
+        }
+        async function saveNotifications() {
+            state.notifications = {
+                emailOnMessage: document.getElementById('notifEmailEnabled').checked,
+                emailAddress: document.getElementById('notifEmailAddress').value,
+                browserNotifications: document.getElementById('notifBrowser').checked
+            };
+            await saveToCloud('Notification settings saved');
+        }
+        function testNotification() {
+            if ('Notification' in window) {
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') {
+                        new Notification('Jaimbo Admin', { body: 'Test notification from your admin panel!', icon: '' });
+                        showSuccess('Test notification sent!');
+                    } else {
+                        showError('Browser notification permission denied.');
+                    }
+                });
+            } else {
+                showError('Browser notifications not supported in this browser.');
+            }
+        }
+
+        // ─── Uploads ───
+        let pendingGalleryFile = null;
+        let pendingMusicCoverFile = null;
+
+        function renderUploads() {
+            const u = state.uploads || {};
+            const cnEl = document.getElementById('uploadCloudName');
+            if (cnEl) cnEl.value = u.cloudName || '';
+            const upEl = document.getElementById('uploadPreset');
+            if (upEl) upEl.value = u.uploadPreset || '';
+            const szEl = document.getElementById('uploadMaxSize');
+            if (szEl) szEl.value = u.maxFileSizeMb || 10;
+            const atEl = document.getElementById('uploadAllowedTypes');
+            if (atEl) atEl.value = u.allowedTypes || 'image/*,audio/*,video/*,.pdf,.doc,.docx';
+        }
+        async function saveUploads() {
+            state.uploads = {
+                cloudName: document.getElementById('uploadCloudName').value.trim(),
+                uploadPreset: document.getElementById('uploadPreset').value.trim(),
+                maxFileSizeMb: parseInt(document.getElementById('uploadMaxSize').value, 10) || 10,
+                allowedTypes: document.getElementById('uploadAllowedTypes').value.trim()
+            };
+            await saveToCloud('Upload settings saved');
+        }
+
+        async function uploadToCloudinary(file, onProgress) {
+            const cloudName = (state.uploads && state.uploads.cloudName) || document.getElementById('uploadCloudName').value.trim();
+            const preset = (state.uploads && state.uploads.uploadPreset) || document.getElementById('uploadPreset').value.trim();
+            if (!cloudName || !preset) {
+                showError('Please configure your Cloudinary Cloud Name and Upload Preset in Settings → File Uploads first.');
+                return null;
+            }
+            const maxMb = (state.uploads && state.uploads.maxFileSizeMb) || 10;
+            if (file.size > maxMb * 1024 * 1024) {
+                showError('File is too large. Max allowed: ' + maxMb + ' MB.');
+                return null;
+            }
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', preset);
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'https://api.cloudinary.com/v1_1/' + cloudName + '/auto/upload');
+                xhr.upload.onprogress = (e) => { if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100)); };
+                xhr.onload = () => {
+                    if (xhr.status === 200) {
+                        const data = JSON.parse(xhr.responseText);
+                        resolve(data.secure_url);
+                    } else {
+                        reject(new Error('Upload failed: ' + xhr.responseText));
+                    }
+                };
+                xhr.onerror = () => reject(new Error('Network error during upload'));
+                xhr.send(formData);
+            });
+        }
+
+        async function handleQuickUpload(file) {
+            if (!file) return;
+            const progress = document.getElementById('uploadProgress');
+            const bar = document.getElementById('uploadProgressBar');
+            const text = document.getElementById('uploadProgressText');
+            const result = document.getElementById('uploadResult');
+            const preview = document.getElementById('uploadPreviewContainer');
+            progress.style.display = 'block'; result.style.display = 'none';
+            bar.style.width = '0%'; text.textContent = 'Uploading ' + file.name + '…';
+            try {
+                const url = await uploadToCloudinary(file, (pct) => {
+                    bar.style.width = pct + '%';
+                    text.textContent = 'Uploading ' + file.name + '… ' + pct + '%';
+                });
+                if (!url) { progress.style.display = 'none'; return; }
+                progress.style.display = 'none';
+                document.getElementById('uploadedUrl').value = url;
+                result.style.display = 'block';
+                if (file.type.startsWith('image/')) {
+                    preview.innerHTML = '<img src="' + url + '" style="max-width:100%; max-height:200px; border-radius:8px; margin-top:8px;">';
+                } else if (file.type.startsWith('audio/')) {
+                    preview.innerHTML = '<audio controls src="' + url + '" style="width:100%; margin-top:8px;"></audio>';
+                } else if (file.type.startsWith('video/')) {
+                    preview.innerHTML = '<video controls src="' + url + '" style="max-width:100%; max-height:200px; border-radius:8px; margin-top:8px;"></video>';
+                } else {
+                    preview.innerHTML = '<a href="' + url + '" target="_blank" style="color:var(--blue); font-size:13px;">📎 View uploaded file</a>';
+                }
+                showSuccess('File uploaded successfully!');
+            } catch (err) {
+                progress.style.display = 'none';
+                showError('Upload failed: ' + err.message);
+            }
+        }
+        function handleQuickUploadDrop(e) {
+            e.preventDefault();
+            document.getElementById('quickUploadArea').style.borderColor = 'var(--border)';
+            const file = e.dataTransfer.files[0];
+            if (file) handleQuickUpload(file);
+        }
+        async function copyUploadedUrl() {
+            const url = document.getElementById('uploadedUrl').value;
+            try { await navigator.clipboard.writeText(url); showSuccess('URL copied to clipboard!'); }
+            catch (_) { document.getElementById('uploadedUrl').select(); document.execCommand('copy'); showSuccess('URL copied!'); }
+        }
+
+        // Gallery upload
+        function handleGalleryUploadDrop(e) {
+            e.preventDefault();
+            document.getElementById('galleryUploadArea').style.borderColor = 'var(--border)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) previewGalleryUpload(file);
+        }
+        function previewGalleryUpload(file) {
+            pendingGalleryFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('galleryUploadPreview').innerHTML = '<img src="' + e.target.result + '" style="max-width:100%; max-height:180px; border-radius:8px; margin-top:8px;">';
+                document.getElementById('galleryUploadBtn').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+        // Gallery and music cover upload inputs are handled via onchange attributes in HTML
+        async function uploadToGallery() {
+            if (!pendingGalleryFile) return showError('Please select an image first.');
+            const btn = document.getElementById('galleryUploadBtn');
+            btn.disabled = true; btn.textContent = 'Uploading…';
+            try {
+                const url = await uploadToCloudinary(pendingGalleryFile, null);
+                if (!url) { btn.disabled = false; btn.textContent = 'Upload to Gallery'; return; }
+                const caption = document.getElementById('galleryUploadCaption').value.trim();
+                const img = { id: 'img_' + Date.now(), url, caption };
+                state.gallery.push(img);
+                await saveToCloud('Image uploaded and added to gallery!');
+                document.getElementById('galleryUploadCaption').value = '';
+                document.getElementById('galleryUploadPreview').innerHTML = '';
+                pendingGalleryFile = null;
+                btn.textContent = 'Upload to Gallery';
+                renderGallery();
+            } catch (err) {
+                showError('Gallery upload failed: ' + err.message);
+                btn.disabled = false; btn.textContent = 'Upload to Gallery';
+            }
+        }
+
+        // Music cover upload
+        function handleMusicCoverDrop(e) {
+            e.preventDefault();
+            document.getElementById('musicCoverUploadArea').style.borderColor = 'var(--border)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) previewMusicCoverUpload(file);
+        }
+        function previewMusicCoverUpload(file) {
+            pendingMusicCoverFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('musicCoverUploadPreview').innerHTML = '<img src="' + e.target.result + '" style="max-width:100%; max-height:160px; border-radius:8px; margin-top:8px;"><button class="btn-primary" onclick="uploadMusicCover()" style="margin-top:10px;">Upload cover</button>';
+            };
+            reader.readAsDataURL(file);
+        }
+        async function uploadMusicCover() {
+            if (!pendingMusicCoverFile) return;
+            try {
+                const url = await uploadToCloudinary(pendingMusicCoverFile, null);
+                if (!url) return;
+                const coverInput = document.getElementById('musicCover');
+                if (coverInput) coverInput.value = url;
+                document.getElementById('musicCoverUploadPreview').innerHTML = '<img src="' + url + '" style="max-width:100%; max-height:160px; border-radius:8px;"><p style="color:var(--green); font-size:12px; margin-top:6px;">✓ Cover URL auto-filled in Music section</p>';
+                pendingMusicCoverFile = null;
+                showSuccess('Cover uploaded! URL filled in Music section.');
+                renderMusic();
+            } catch (err) {
+                showError('Cover upload failed: ' + err.message);
+            }
+        }
+
+        // ─── Maintenance ───
+        function renderMaintenance() {
+            const m = state.maintenance || {};
+            const enabledEl = document.getElementById('maintenanceEnabled');
+            if (enabledEl) enabledEl.checked = !!m.maintenanceMode;
+            const msgEl = document.getElementById('maintenanceMessage');
+            if (msgEl) msgEl.value = m.maintenanceMessage || 'Site is under maintenance. Back soon!';
+            const lastEl = document.getElementById('lastBackupText');
+            if (lastEl) lastEl.textContent = m.lastBackup ? 'Last backup: ' + new Date(m.lastBackup).toLocaleString() : 'No backup downloaded yet.';
+        }
+        async function saveMaintenance() {
+            state.maintenance = Object.assign({}, state.maintenance, {
+                maintenanceMode: document.getElementById('maintenanceEnabled').checked,
+                maintenanceMessage: document.getElementById('maintenanceMessage').value
+            });
+            await saveToCloud('Maintenance settings saved');
+        }
+        function downloadBackup() {
+            const data = JSON.stringify(state, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'jaimbo-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click(); URL.revokeObjectURL(url);
+            state.maintenance = Object.assign({}, state.maintenance, { lastBackup: new Date().toISOString() });
+            saveToCloud(null);
+            showSuccess('Backup downloaded!');
+            document.getElementById('lastBackupText').textContent = 'Last backup: ' + new Date().toLocaleString();
+        }
+        function restoreFromBackup(input) {
+            const file = input.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!confirm('Restore from this backup? This will overwrite all current data.')) return;
+                    state = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_STATE)), data);
+                    await saveToCloud('Backup restored successfully!');
+                } catch (_) { showError('Invalid backup file. Please use a valid JSON backup.'); }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+        async function clearAllData() {
+            if (!confirm('Are you absolutely sure? This will DELETE all articles, posts, gallery images, music, messages, and settings. This cannot be undone!')) return;
+            if (!confirm('Last chance — really clear everything?')) return;
+            state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            await saveToCloud('All data cleared');
+        }
+
+        // ─── Media Upload Section (dedicated page) ───
+        async function handleQuickUpload2(file) {
+            if (!file) return;
+            const progress = document.getElementById('uploadProgress2');
+            const bar = document.getElementById('uploadProgressBar2');
+            const text = document.getElementById('uploadProgressText2');
+            const result = document.getElementById('uploadResult2');
+            const preview = document.getElementById('uploadPreviewContainer2');
+            progress.style.display = 'block'; result.style.display = 'none';
+            bar.style.width = '0%'; text.textContent = 'Uploading ' + file.name + '…';
+            try {
+                const url = await uploadToCloudinary(file, (pct) => {
+                    bar.style.width = pct + '%';
+                    text.textContent = 'Uploading ' + file.name + '… ' + pct + '%';
+                });
+                if (!url) { progress.style.display = 'none'; return; }
+                progress.style.display = 'none';
+                document.getElementById('uploadedUrl2').value = url;
+                result.style.display = 'block';
+                if (file.type.startsWith('image/')) {
+                    preview.innerHTML = '<img src="' + url + '" style="max-width:100%; max-height:220px; border-radius:8px;">';
+                } else if (file.type.startsWith('audio/')) {
+                    preview.innerHTML = '<audio controls src="' + url + '" style="width:100%;"></audio>';
+                } else if (file.type.startsWith('video/')) {
+                    preview.innerHTML = '<video controls src="' + url + '" style="max-width:100%; max-height:220px; border-radius:8px;"></video>';
+                } else {
+                    preview.innerHTML = '<a href="' + url + '" target="_blank" style="color:var(--blue); font-size:13px;">📎 View uploaded file</a>';
+                }
+                showSuccess('File uploaded! URL ready to copy.');
+            } catch (err) {
+                progress.style.display = 'none';
+                showError('Upload failed: ' + err.message);
+            }
+        }
+        function handleQuickUploadDrop2(e) {
+            e.preventDefault();
+            e.currentTarget.style.borderColor = 'var(--border)';
+            const file = e.dataTransfer.files[0];
+            if (file) handleQuickUpload2(file);
+        }
+        async function copyUploadedUrl2() {
+            const url = document.getElementById('uploadedUrl2').value;
+            try { await navigator.clipboard.writeText(url); showSuccess('URL copied!'); }
+            catch (_) { document.getElementById('uploadedUrl2').select(); document.execCommand('copy'); showSuccess('URL copied!'); }
+        }
+        let pendingGalleryFile2 = null;
+        function handleGalleryUploadDrop2(e) {
+            e.preventDefault();
+            e.currentTarget.style.borderColor = 'var(--border)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) previewGalleryUpload2(file);
+        }
+        function previewGalleryUpload2(file) {
+            pendingGalleryFile2 = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('galleryUploadPreview2').innerHTML = '<img src="' + e.target.result + '" style="max-width:100%; max-height:160px; border-radius:8px;">';
+                document.getElementById('galleryUploadBtn2').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+        async function uploadToGallery2() {
+            if (!pendingGalleryFile2) return;
+            const btn = document.getElementById('galleryUploadBtn2');
+            btn.disabled = true; btn.textContent = 'Uploading…';
+            try {
+                const url = await uploadToCloudinary(pendingGalleryFile2, null);
+                if (!url) { btn.disabled = false; btn.textContent = 'Add to Gallery'; return; }
+                const caption = document.getElementById('galleryUploadCaption2').value.trim();
+                state.gallery.push({ id: 'img_' + Date.now(), url, caption });
+                await saveToCloud('Image added to gallery!');
+                document.getElementById('galleryUploadCaption2').value = '';
+                document.getElementById('galleryUploadPreview2').innerHTML = '';
+                pendingGalleryFile2 = null;
+                btn.disabled = true; btn.textContent = 'Add to Gallery';
+            } catch (err) {
+                showError('Upload failed: ' + err.message);
+                btn.disabled = false; btn.textContent = 'Add to Gallery';
+            }
+        }
+        let pendingMusicFile2 = null;
+        function handleMusicUploadDrop2(e) {
+            e.preventDefault();
+            e.currentTarget.style.borderColor = 'var(--border)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('audio/')) previewMusicUpload2(file);
+        }
+        function previewMusicUpload2(file) {
+            pendingMusicFile2 = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('musicUploadPreview2').innerHTML = '<audio controls src="' + e.target.result + '" style="width:100%;"></audio>';
+                document.getElementById('musicUploadBtn2').disabled = false;
+                const t = document.getElementById('musicUploadTitle2');
+                if (!t.value) t.value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+            };
+            reader.readAsDataURL(file);
+        }
+        async function uploadMusic2() {
+            if (!pendingMusicFile2) return;
+            const title = document.getElementById('musicUploadTitle2').value.trim();
+            if (!title) return showError('Please enter a track title.');
+            const btn = document.getElementById('musicUploadBtn2');
+            btn.disabled = true; btn.textContent = 'Uploading…';
+            try {
+                const url = await uploadToCloudinary(pendingMusicFile2, null);
+                if (!url) { btn.disabled = false; btn.textContent = 'Add to Music'; return; }
+                const artist = document.getElementById('musicUploadArtist2').value.trim();
+                state.music.push({ id: 'mus_' + Date.now(), title, artist, url, cover: '', addedAt: new Date().toISOString() });
+                await saveToCloud('Track uploaded and added!');
+                document.getElementById('musicUploadTitle2').value = '';
+                document.getElementById('musicUploadArtist2').value = '';
+                document.getElementById('musicUploadPreview2').innerHTML = '';
+                pendingMusicFile2 = null;
+                btn.disabled = true; btn.textContent = 'Add to Music';
+            } catch (err) {
+                showError('Upload failed: ' + err.message);
+                btn.disabled = false; btn.textContent = 'Add to Music';
+            }
+        }
+
+        // ─── Gallery direct upload (in Gallery section) ───
+        let pendingGalleryDirectFile = null;
+        function handleGalleryDirectDrop(e) {
+            e.preventDefault();
+            e.currentTarget.style.borderColor = 'var(--border)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) previewGalleryDirect(file);
+        }
+        function handleGalleryDirectUpload(file) {
+            if (file) previewGalleryDirect(file);
+        }
+        function previewGalleryDirect(file) {
+            pendingGalleryDirectFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('galleryDirectPreview').innerHTML = '<img src="' + e.target.result + '" style="max-width:100%; max-height:180px; border-radius:8px;">';
+                document.getElementById('galleryDirectBtn').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+        async function submitGalleryDirectUpload() {
+            if (!pendingGalleryDirectFile) return;
+            const btn = document.getElementById('galleryDirectBtn');
+            btn.disabled = true; btn.textContent = 'Uploading…';
+            try {
+                const url = await uploadToCloudinary(pendingGalleryDirectFile, null);
+                if (!url) { btn.disabled = false; btn.textContent = 'Upload & add to gallery'; return; }
+                const caption = document.getElementById('galleryDirectCaption').value.trim();
+                const img = { id: 'img_' + Date.now(), url, caption };
+                state.gallery.push(img);
+                await saveToCloud('Image uploaded and added to gallery!');
+                document.getElementById('galleryDirectCaption').value = '';
+                document.getElementById('galleryDirectPreview').innerHTML = '';
+                pendingGalleryDirectFile = null;
+                btn.disabled = true; btn.textContent = 'Upload & add to gallery';
+            } catch (err) {
+                showError('Upload failed: ' + err.message);
+                btn.disabled = false; btn.textContent = 'Upload & add to gallery';
+            }
+        }
+
+        // ─── Music direct upload (in Music section) ───
+        let pendingMusicDirectFile = null;
+        function handleMusicDirectDrop(e) {
+            e.preventDefault();
+            e.currentTarget.style.borderColor = 'var(--border)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('audio/')) previewMusicDirect(file);
+        }
+        function handleMusicDirectUpload(file) {
+            if (file) previewMusicDirect(file);
+        }
+        function previewMusicDirect(file) {
+            pendingMusicDirectFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('musicDirectPreview').innerHTML = '<audio controls src="' + e.target.result + '" style="width:100%; margin-bottom:8px;"></audio>';
+                document.getElementById('musicDirectBtn').disabled = false;
+                // Auto-fill title from filename
+                const titleInput = document.getElementById('musicDirectTitle');
+                if (!titleInput.value) titleInput.value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+            };
+            reader.readAsDataURL(file);
+        }
+        async function submitMusicDirectUpload() {
+            if (!pendingMusicDirectFile) return;
+            const title = document.getElementById('musicDirectTitle').value.trim();
+            if (!title) return showError('Please enter a track title.');
+            const btn = document.getElementById('musicDirectBtn');
+            btn.disabled = true; btn.textContent = 'Uploading…';
+            try {
+                const url = await uploadToCloudinary(pendingMusicDirectFile, null);
+                if (!url) { btn.disabled = false; btn.textContent = 'Upload & add track'; return; }
+                const artist = document.getElementById('musicDirectArtist').value.trim();
+                const track = { id: 'mus_' + Date.now(), title, artist, url, cover: '', addedAt: new Date().toISOString() };
+                state.music.push(track);
+                await saveToCloud('Track uploaded and added!');
+                document.getElementById('musicDirectTitle').value = '';
+                document.getElementById('musicDirectArtist').value = '';
+                document.getElementById('musicDirectPreview').innerHTML = '';
+                pendingMusicDirectFile = null;
+                btn.disabled = true; btn.textContent = 'Upload & add track';
+            } catch (err) {
+                showError('Upload failed: ' + err.message);
+                btn.disabled = false; btn.textContent = 'Upload & add track';
+            }
+        }
+
+        // ─── Article image upload ───
+        async function handleArticleImageUpload(file) {
+            if (!file) return;
+            try {
+                showSuccess('Uploading cover image…');
+                const url = await uploadToCloudinary(file, null);
+                if (url) {
+                    document.getElementById('articleImage').value = url;
+                    showSuccess('Cover image uploaded! URL filled in.');
+                }
+            } catch (err) {
+                showError('Image upload failed: ' + err.message);
             }
         }
 
