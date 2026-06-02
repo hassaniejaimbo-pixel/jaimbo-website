@@ -2665,6 +2665,7 @@
         <a href="#social-proof">Community</a>
         <a href="#contact">Contact</a>
         <a href="https://www.facebook.com/profile.php?id=61578836424894" target="_blank">Facebook</a>
+        <a href="admin.html" style="opacity: 0.5; font-size: 0.9em;">Admin</a>
       </div>
       <p class="footer-copy">© 2025 Jaimbo. All rights reserved. Digital Creator · Kenya.</p>
     </div>
@@ -2715,7 +2716,7 @@
 
     // ─── Live Video & Cloud Sync ───
     const FB_PROFILE = 'https://www.facebook.com/profile.php?id=61578836424894';
-    const CLOUD_SYNC_URL = 'https://api.jsonblob.com/019e7981-efa3-7fa6-a5b8-4ae7ab4bf7b0';
+    const CLOUD_SYNC_URL = 'https://api.jsonblob.com/api/jsonBlob/019e851c-632f-7b86-a31e-762794f54e46';
 
     // Start Facebook live check
     checkFbLive();
@@ -2884,6 +2885,44 @@
     let _cachedFbConfig = null;
     let _cachedFbAt = 0;
 
+    function renderLive(live) {
+      const badge = document.getElementById('liveBadge');
+      const stage = document.getElementById('liveStage');
+      if (!badge || !stage) return;
+      if (live && live.status === 'live') {
+        badge.style.display = 'inline-flex';
+        const embed = toEmbedUrl(live.url);
+        if (embed) {
+          stage.innerHTML = '<iframe src="' + embed + '" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+        } else {
+          stage.innerHTML = '<div class="live-placeholder">Live now on Facebook! <a href="' + escapeHtml(live.url) + '" target="_blank">Watch here</a></div>';
+        }
+      } else {
+        badge.style.display = 'none';
+        stage.innerHTML = '<div class="live-placeholder">Not currently live. Check back soon!</div>';
+      }
+    }
+
+    function renderPrevStreams(list) {
+      const grid = document.getElementById('prevStreamsGrid');
+      if (!grid) return;
+      const arr = Array.isArray(list) ? list.slice(0, 6) : [];
+      if (arr.length === 0) {
+        grid.innerHTML = '<div class="feed-empty">No previous streams found.</div>';
+        return;
+      }
+      grid.innerHTML = arr.map(s => {
+        const thumb = toThumbnailUrl(s.url) || 'https://via.placeholder.com/480x270/111/fff?text=Video';
+        return (
+          '<div class="prev-stream-card" onclick="window.open(\'' + escapeHtml(s.url) + '\', \'_blank\')">' +
+            '<img src="' + thumb + '" alt="Stream Thumbnail">' +
+            '<div class="play-overlay">▶</div>' +
+            '<div class="info"><h4>' + escapeHtml(s.title || 'Previous Stream') + '</h4></div>' +
+          '</div>'
+        );
+      }).join('');
+    }
+
     async function loadCloudData() {
       try {
         const res = await fetch(CLOUD_SYNC_URL + '?_=' + Date.now(), { cache: 'no-store' });
@@ -3010,14 +3049,14 @@
     function renderGallery(list) {
       const grid = document.getElementById('galleryGrid');
       if (!grid) return;
-      _galleryItems = Array.isArray(list) ? list.filter(i => i && i.url) : [];
+      _galleryItems = Array.isArray(list) ? list.filter(i => i && (i.src || i.url)) : [];
       if (_galleryItems.length === 0) {
         grid.innerHTML = '<div class="feed-empty">No images yet.</div>';
         return;
       }
       grid.innerHTML = _galleryItems.map((img, i) =>
         '<div class="gallery-item fade-in" style="animation-delay:' + (i * 0.04) + 's;" onclick="openLightbox(' + i + ')">' +
-          '<img src="' + escapeHtml(img.url) + '" alt="' + escapeHtml(img.caption || '') + '" loading="lazy" onerror="this.style.opacity=0.3">' +
+          '<img src="' + escapeHtml(img.src || img.url) + '" alt="' + escapeHtml(img.caption || '') + '" loading="lazy" onerror="this.style.opacity=0.3">' +
           (img.caption ? '<div class="gallery-item-caption">' + escapeHtml(img.caption) + '</div>' : '') +
         '</div>'
       ).join('');
@@ -3041,7 +3080,7 @@
             '<div class="music-card-body">' +
               '<div class="music-card-title">' + escapeHtml(t.title || 'Untitled') + '</div>' +
               '<div class="music-card-artist">' + escapeHtml(t.artist || 'Jaimbo') + '</div>' +
-              '<audio controls preload="none" src="' + escapeHtml(t.url) + '"></audio>' +
+              '<audio controls preload="none" src="' + escapeHtml(t.src || t.url) + '"></audio>' +
             '</div>' +
           '</div>'
         );
@@ -3181,7 +3220,7 @@
       if (!_galleryItems.length) return;
       _lightboxIndex = idx;
       const lb = ensureLightbox();
-      document.getElementById('lightboxImg').src = _galleryItems[idx].url;
+      document.getElementById('lightboxImg').src = _galleryItems[idx].src || _galleryItems[idx].url;
       lb.classList.add('active');
       document.body.style.overflow = 'hidden';
     };
@@ -3194,7 +3233,7 @@
       if (!_galleryItems.length) return;
       _lightboxIndex = (_lightboxIndex + dir + _galleryItems.length) % _galleryItems.length;
       const img = document.getElementById('lightboxImg');
-      if (img) img.src = _galleryItems[_lightboxIndex].url;
+      if (img) img.src = _galleryItems[_lightboxIndex].src || _galleryItems[_lightboxIndex].url;
     };
     document.addEventListener('keydown', e => {
       const lb = document.getElementById('lightbox');
