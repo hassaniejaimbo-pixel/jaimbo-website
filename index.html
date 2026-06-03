@@ -1834,83 +1834,76 @@
       color: var(--text-muted);
     }
 
-    /* Share buttons */
+    /* Share buttons - Modern & Clean */
     .share-buttons {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       margin-left: auto;
     }
     .share-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 6px;
-      background: rgba(24,119,242,0.12);
-      border: 1px solid rgba(24,119,242,0.25);
-      color: var(--blue-light);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-decoration: none;
       font-size: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .share-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: currentColor;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 0;
     }
     .share-btn:hover {
-      background: rgba(24,119,242,0.25);
-      border-color: rgba(24,119,242,0.5);
+      transform: translateY(-4px);
       color: var(--white);
+      border-color: transparent;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    .share-btn:hover::before {
+      opacity: 1;
     }
     .share-btn svg {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       fill: currentColor;
+      position: relative;
+      z-index: 1;
+      transition: transform 0.3s ease, filter 0.3s ease;
     }
-    .share-btn.facebook {
-      background: rgba(24,119,242,0.15);
-      border-color: rgba(24,119,242,0.4);
-      color: #1877F2;
-    }
-    .share-btn.facebook:hover {
-      background: #1877F2;
-      color: white;
-    }
-    .share-btn.twitter {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.1);
-      color: #ffffff;
-    }
-    .share-btn.twitter:hover {
-      background: #000000;
-      color: white;
-    }
-    .share-btn.whatsapp {
-      background: rgba(37,211,102,0.15);
-      border-color: rgba(37,211,102,0.4);
-      color: #25D366;
-    }
-    .share-btn.whatsapp:hover {
-      background: #25D366;
-      color: white;
-    }
-    .share-btn.link {
-      background: rgba(24, 119, 242, 0.1);
-      border-color: rgba(24, 119, 242, 0.2);
-      color: var(--blue-light);
-    }
-    .share-btn.link:hover {
-      background: var(--blue);
-      border-color: var(--blue);
-      color: var(--white);
+    .share-btn:hover svg {
       transform: scale(1.1);
-      box-shadow: 0 5px 15px rgba(24, 119, 242, 0.4);
+      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
     }
-    .share-btn.link svg {
-      transition: transform 0.3s ease;
-    }
-    .share-btn.link:hover svg {
-      transform: rotate(-15deg);
-    }
+    .share-btn.facebook:hover { color: #1877F2; background: rgba(24, 119, 242, 0.15); border-color: #1877F2; }
+    .share-btn.facebook:hover::before { background: #1877F2; opacity: 1; color: white; }
+    .share-btn.facebook:hover svg { fill: white; }
+
+    .share-btn.twitter:hover { color: #ffffff; background: #000000; border-color: #333; }
+    .share-btn.twitter:hover::before { background: #000000; opacity: 1; color: white; }
+    .share-btn.twitter:hover svg { fill: white; }
+
+    .share-btn.whatsapp:hover { color: #25D366; background: rgba(37, 211, 102, 0.15); border-color: #25D366; }
+    .share-btn.whatsapp:hover::before { background: #25D366; opacity: 1; color: white; }
+    .share-btn.whatsapp:hover svg { fill: white; }
+
+    .share-btn.link:hover { color: var(--blue); background: rgba(24, 119, 242, 0.15); border-color: var(--blue); }
+    .share-btn.link:hover::before { background: var(--blue); opacity: 1; color: white; }
+    .share-btn.link:hover svg { stroke: white; transform: rotate(-15deg) scale(1.1); }
+    .share-btn.link svg { fill: none; stroke: currentColor; }
     
     .toast {
       position: fixed;
