@@ -1,0 +1,18 @@
+[Unit]
+Description=Jaimbo News Bot — Auto-reposts news to jaimbo.live every hour
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/jaimbo-news-bot
+ExecStart=/usr/bin/python3 /home/ubuntu/jaimbo-news-bot/news_bot.py --daemon --interval 60
+Restart=on-failure
+RestartSec=60
+StandardOutput=append:/home/ubuntu/jaimbo-news-bot/news_bot.log
+StandardError=append:/home/ubuntu/jaimbo-news-bot/news_bot.log
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
