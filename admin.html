@@ -408,7 +408,6 @@
                 <button class="menu-item" onclick="switchSection('posts', this)">📢 Posts</button>
                 <button class="menu-item" onclick="switchSection('gallery', this)">🖼️ Gallery</button>
                 <button class="menu-item" onclick="switchSection('music', this)">🎵 Music</button>
-                <button class="menu-item" onclick="switchSection('ticker', this)">📰 Breaking Ticker</button>
                 <button class="menu-item" onclick="switchSection('content', this)">✏️ Website Copy</button>
                 
                 <div style="padding:0 14px; margin:16px 0; border-top:1px solid var(--border-soft);"></div>
@@ -516,8 +515,6 @@
                     <div class="card">
                         <h3>Create new article</h3>
                         <input type="text" class="form-input" id="articleTitle" placeholder="Article title">
-                        <label class="input-label">Category</label>
-                        <input type="text" class="form-input" id="articleCategory" placeholder="e.g. Politics, Social, Live, Featured">
                         <div style="display:flex; gap:8px; align-items:center; margin-bottom:14px;">
                             <input type="text" class="form-input" id="articleImage" placeholder="Cover image URL (optional)" style="margin-bottom:0; flex:1;">
                             <button class="btn-secondary" onclick="document.getElementById('articleImageUpload').click()" style="flex-shrink:0; padding:10px 14px; font-size:12px;">📷 Upload</button>
@@ -536,8 +533,6 @@
                     <div class="card">
                         <h3>Create new post</h3>
                         <input type="text" class="form-input" id="postTitle" placeholder="Post title">
-                        <label class="input-label">Category</label>
-                        <input type="text" class="form-input" id="postCategory" placeholder="e.g. Social, Update, News">
                         <textarea class="form-textarea" id="postContent" placeholder="Post content"></textarea>
                         <button class="btn-primary" onclick="createPost()" id="publishPostBtn">Publish post</button>
                     </div>
@@ -600,18 +595,6 @@
                     </div>
                     <div id="musicList"></div>
                 </section>
-                <!-- Breaking Ticker -->
-                <section id="ticker" class="section">
-                    <h2>Breaking News Ticker</h2>
-                    <p class="section-desc">Manage the animated ticker items that scroll at the top of your website.</p>
-                    <div class="card">
-                        <h3>Add ticker item</h3>
-                        <input type="text" class="form-input" id="tickerItemText" placeholder="Breaking news headline or update..." style="margin-bottom:14px;">
-                        <button class="btn-primary" onclick="addTickerItem()">Add to ticker</button>
-                    </div>
-                    <div id="tickerList"></div>
-                </section>
-
 
                 <!-- Content -->
                 <section id="content" class="section">
@@ -1625,11 +1608,10 @@
             const title = document.getElementById('articleTitle').value.trim();
             const content = document.getElementById('articleContent').value.trim();
             const image = document.getElementById('articleImage').value.trim();
-            const category = document.getElementById('articleCategory').value.trim() || 'News';
             if (!title || !content) return showError('Please fill in the title and content.');
             const article = {
                 id: 'art_' + Date.now(),
-                title, content, image, category,
+                title, content, image,
                 date: new Date().toISOString()
             };
             state.articles.push(article);
@@ -1641,7 +1623,6 @@
                 document.getElementById('articleTitle').value = '';
                 document.getElementById('articleContent').value = '';
                 document.getElementById('articleImage').value = '';
-                document.getElementById('articleCategory').value = '';
             } else {
                 // Roll back local change on failure
                 state.articles = state.articles.filter(a => a.id !== article.id);
@@ -1697,9 +1678,8 @@
         async function createPost() {
             const title = document.getElementById('postTitle').value.trim();
             const content = document.getElementById('postContent').value.trim();
-            const category = document.getElementById('postCategory').value.trim() || 'Post';
             if (!title || !content) return showError('Please fill in the title and content.');
-            const post = { id: 'post_' + Date.now(), title, content, category, date: new Date().toISOString() };
+            const post = { id: 'post_' + Date.now(), title, content, date: new Date().toISOString() };
             state.posts.push(post);
             const btn = document.getElementById('publishPostBtn');
             btn.disabled = true; btn.textContent = 'Publishing…';
@@ -1708,7 +1688,6 @@
             if (ok) {
                 document.getElementById('postTitle').value = '';
                 document.getElementById('postContent').value = '';
-                document.getElementById('postCategory').value = '';
             } else {
                 state.posts = state.posts.filter(p => p.id !== post.id);
                 renderPosts();
@@ -3082,42 +3061,4 @@ Original summary: ${c.desc}`
         }
     </script>
 </body>
-
-        // ─── Breaking Ticker ───
-        function renderTickerList() {
-            const list = document.getElementById('tickerList');
-            if (!list) return;
-            const items = state.tickerItems || [];
-            if (!items.length) {
-                list.innerHTML = '<div class="empty" style="color:var(--text-muted);font-size:13px;padding:16px;text-align:center;">No ticker items yet. Add one above.</div>';
-                return;
-            }
-            list.innerHTML = items.map((item, i) => `
-                <div class="item-card" style="margin-bottom:10px;">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
-                        <div style="flex:1;">
-                            <p style="color:var(--text);font-size:14px;margin-bottom:8px;">${escapeHtml(item)}</p>
-                        </div>
-                        <button class="btn-danger" onclick="deleteTickerItem(${i})">Delete</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-        async function addTickerItem() {
-            const input = document.getElementById('tickerItemText');
-            const text = input.value.trim();
-            if (!text) return showError('Please enter a ticker item.');
-            if (!state.tickerItems) state.tickerItems = [];
-            state.tickerItems.push(text);
-            await saveToCloud('Ticker item added!');
-            input.value = '';
-            renderTickerList();
-        }
-        async function deleteTickerItem(index) {
-            if (!confirm('Delete this ticker item?')) return;
-            state.tickerItems.splice(index, 1);
-            await saveToCloud('Ticker item deleted');
-            renderTickerList();
-        }
-    </script>
 </html>
