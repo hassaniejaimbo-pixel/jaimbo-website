@@ -2835,8 +2835,8 @@
                 while (attempts < 3 && !success) {
                     try {
                         attempts++;
-                        // Call Google Gemini API (Stable Flash 1.5)
-                        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+                        // Call Google Gemini API (Stable v1)
+                        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
